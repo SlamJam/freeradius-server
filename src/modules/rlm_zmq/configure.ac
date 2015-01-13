@@ -1,7 +1,7 @@
 AC_PREREQ([2.53])
-AC_INIT(rlm_example.c)
+AC_INIT(rlm_zmq.c)
 AC_REVISION($Revision$)
-AC_DEFUN(modname,[rlm_example])
+AC_DEFUN(modname,[rlm_zmq])
 
 if test x$with_[]modname != xno; then
 	AC_PROG_CC

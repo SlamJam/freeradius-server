@@ -582,7 +582,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="rlm_example.c"
+ac_unique_file="rlm_zmq.c"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 targetname
@@ -1815,7 +1815,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-if test x$with_rlm_example != xno; then
+if test x$with_rlm_zmq != xno; then
 	ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3151,20 +3151,20 @@ smart_prefix=
 	if test "$ac_cv_header_stdio_h" != "yes"; then
 		fail="$fail stdio.h"
 	fi
-	targetname=rlm_example
+	targetname=rlm_zmq
 else
 	targetname=
-	echo \*\*\* module rlm_example is disabled.
+	echo \*\*\* module rlm_zmq is disabled.
 fi
 
 if test x"$fail" != x""; then
 	if test x"${enable_strict_dependencies}" = x"yes"; then
-		as_fn_error $? "set --without-rlm_example to disable it explicitly." "$LINENO" 5
+		as_fn_error $? "set --without-rlm_zmq to disable it explicitly." "$LINENO" 5
 	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: silently not building rlm_example." >&5
-$as_echo "$as_me: WARNING: silently not building rlm_example." >&2;}
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: FAILURE: rlm_example requires: $fail." >&5
-$as_echo "$as_me: WARNING: FAILURE: rlm_example requires: $fail." >&2;};
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: silently not building rlm_zmq." >&5
+$as_echo "$as_me: WARNING: silently not building rlm_zmq." >&2;}
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: FAILURE: rlm_zmq requires: $fail." >&5
+$as_echo "$as_me: WARNING: FAILURE: rlm_zmq requires: $fail." >&2;};
 		targetname=""
 	fi
 fi

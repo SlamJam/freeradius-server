@@ -27,29 +27,18 @@ RCSID("$Id$")
 #include <freeradius-devel/modules.h>
 #include <freeradius-devel/rad_assert.h>
 
-/*
- *	Define a structure for our module configuration.
- *
- *	These variables do not need to be in a structure, but it's
- *	a lot cleaner to do so, and a pointer to the structure can
- *	be used as the instance handle.
- */
-typedef struct rlm_example_t {
-	bool		boolean;
-	uint32_t	value;
-	char const	*string;
-	fr_ipaddr_t	ipaddr;
-} rlm_example_t;
+#include "rlm_zmq.h"
 
 /*
  *	A mapping of configuration file names to internal variables.
  */
 static const CONF_PARSER module_config[] = {
+/*
 	{ "integer", FR_CONF_OFFSET(PW_TYPE_INTEGER, rlm_example_t, value), "1" },
 	{ "boolean", FR_CONF_OFFSET(PW_TYPE_BOOLEAN, rlm_example_t, boolean), "no" },
 	{ "string", FR_CONF_OFFSET(PW_TYPE_STRING, rlm_example_t, string), NULL },
 	{ "ipaddr", FR_CONF_OFFSET(PW_TYPE_IPV4_ADDR, rlm_example_t, ipaddr), "*" },
-
+*/
 	{ NULL, -1, 0, NULL, NULL }		/* end the list */
 };
 
@@ -76,17 +65,22 @@ static int rlm_example_cmp(UNUSED void *instance, REQUEST *request, UNUSED VALUE
  */
 static int mod_instantiate(CONF_SECTION *conf, void *instance)
 {
-	rlm_example_t *inst = instance;
+	rlm_zmq_t *inst = instance;
 	ATTR_FLAGS flags;
 
 	memset(&flags, 0, sizeof(flags));
 	/*
 	 *	Do more work here
 	 */
+	/*
 	if (!inst->boolean) {
 		cf_log_err_cs(conf, "Boolean is false: forcing error!");
 		return -1;
 	}
+	*/
+
+	inst->pool = fr_connection_pool_module_init(conf, inst, NULL, NULL, NULL);
+	if (!inst->pool) return -1;
 
 	if (dict_addattr("Example-Paircmp", -1, 0, PW_TYPE_STRING, flags) < 0) {
 		ERROR("Failed creating paircmp attribute: %s", fr_strerror());
@@ -97,6 +91,20 @@ static int mod_instantiate(CONF_SECTION *conf, void *instance)
 	paircompare_register(dict_attrbyname("Example-Paircmp"), dict_attrbyvalue(PW_USER_NAME, 0), false,
 			     rlm_example_cmp, inst);
 
+	return 0;
+}
+
+/*
+ *	Only free memory we allocated.  The strings allocated via
+ *	cf_section_parse() do not need to be freed.
+ */
+static int mod_detach(UNUSED void *instance)
+{
+	rlm_zmq_t *inst = instance;
+
+	if (inst->pool) fr_connection_pool_delete(inst->pool);
+
+	/* free things here */
 	return 0;
 }
 
@@ -181,16 +189,6 @@ static rlm_rcode_t CC_HINT(nonnull) mod_checksimul(UNUSED void *instance, UNUSED
 
 
 /*
- *	Only free memory we allocated.  The strings allocated via
- *	cf_section_parse() do not need to be freed.
- */
-static int mod_detach(UNUSED void *instance)
-{
-	/* free things here */
-	return 0;
-}
-
-/*
  *	The module name should be the only globally exported symbol.
  *	That is, everything else should be 'static'.
  *
@@ -201,9 +199,9 @@ static int mod_detach(UNUSED void *instance)
  */
 module_t rlm_example = {
 	RLM_MODULE_INIT,
-	"example",
+	"zmq",
 	RLM_TYPE_THREAD_SAFE,		/* type */
-	sizeof(rlm_example_t),
+	sizeof(rlm_zmq_t),
 	module_config,
 	mod_instantiate,		/* instantiation */
 	mod_detach,			/* detach */
