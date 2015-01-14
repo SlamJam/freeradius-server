@@ -29,6 +29,8 @@ enum RLM_RCODE {
 }
 
 message Request {
-
-    required RLM_RCODE rcode = 4 [default = NOOP];
+    required FR_Request req = 1;
+    required RLM_RCODE rcode = 2 [default = NOOP];
+    repeated FR_AVP config_items = 3;
+    repeated FR_AVP state = 4;
 }
