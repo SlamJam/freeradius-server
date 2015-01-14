@@ -17,10 +17,12 @@ ifneq "$(TARGETNAME)" ""
 TARGET		:= $(TARGETNAME).a
 endif
 
-SOURCES		:= $(TARGETNAME).c zmq.c
+SOURCES		:= $(TARGETNAME).c zmq.c rlm_zmq.pb-c.c
 
 SRC_CFLAGS	:= @mod_cflags@
 TGT_LDLIBS	:= @mod_ldflags@
+
+PROTOCC := @PROTOCC@
 
 #
 #  If the target has documentation in man format it should be set here
@@ -42,3 +44,7 @@ TGT_LDLIBS	:= @mod_ldflags@
 
 #$(R)$(raddbdir)/example.pl: src/modules/$(TARGETNAME)/example.sh
 #	@$(INSTALL) -m 755 src/modules/$(TARGETNAME)/example.sh $(R)$(raddbdir)/
+
+%.pb-c.c: %.proto
+	@echo PROTOC-C $^
+	@$(PROTOCC) --proto_path="$(@D)" --c_out="$(@D)" "$^"
