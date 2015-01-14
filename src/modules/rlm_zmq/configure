@@ -588,7 +588,8 @@ LIBOBJS
 targetname
 mod_ldflags
 mod_cflags
-CPP
+PROTOCC
+PROTOCC_TEST
 OBJEXT
 EXEEXT
 ac_ct_CC
@@ -637,6 +638,13 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_protoc_c
+with_zmq_include_dir
+with_zmq_lib_dir
+with_zmq_dir
+with_protobufc_include_dir
+with_protobufc_lib_dir
+with_protobufc_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -645,8 +653,7 @@ CC
 CFLAGS
 LDFLAGS
 LIBS
-CPPFLAGS
-CPP'
+CPPFLAGS'
 
 
 # Initialize some variables set by options.
@@ -1250,6 +1257,23 @@ if test -n "$ac_init_help"; then
 
   cat <<\_ACEOF
 
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-protoc-c=PATH    location of the protoc-c protocol buffer compiler
+                          binary, defaults to protoc-c
+  --with-zmq-include-dir=DIR
+                          Directory where the zmq includes may be found
+  --with-zmq-lib-dir=DIR  Directory where the zmq libraries may be found
+  --with-zmq-dir=DIR      Base directory where zmq is installed
+  --with-protobufc-include-dir=DIR
+                          Directory where the protobuf-c includes may be found
+  --with-protobufc-lib-dir=DIR
+                          Directory where the protobuf-c libraries may be
+                          found
+  --with-protobufc-dir=DIR
+                          Base directory where protobuf-c is installed
+
 Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
@@ -1258,7 +1282,6 @@ Some influential environment variables:
   LIBS        libraries to pass to the linker, e.g. -l<library>
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
-  CPP         C preprocessor
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -1377,43 +1400,6 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_compile
-
-# ac_fn_c_try_cpp LINENO
-# ----------------------
-# Try to preprocess conftest.$ac_ext, and return whether this succeeded.
-ac_fn_c_try_cpp ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  if { { ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
-$as_echo "$ac_try_echo"; } >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.err
-  ac_status=$?
-  if test -s conftest.err; then
-    grep -v '^ *+' conftest.err >conftest.er1
-    cat conftest.er1 >&5
-    mv -f conftest.er1 conftest.err
-  fi
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } > conftest.i && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then :
-  ac_retval=0
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-    ac_retval=1
-fi
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-  as_fn_set_status $ac_retval
-
-} # ac_fn_c_try_cpp
 
 # ac_fn_c_try_link LINENO
 # -----------------------
@@ -1816,7 +1802,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 if test x$with_rlm_zmq != xno; then
-	ac_ext=c
+
+				ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -2605,326 +2592,126 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-	ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking how to run the C preprocessor" >&5
-$as_echo_n "checking how to run the C preprocessor... " >&6; }
-# On Suns, sometimes $CPP names a directory.
-if test -n "$CPP" && test -d "$CPP"; then
-  CPP=
+
+
+
+# Check whether --with-protoc-c was given.
+if test "${with_protoc_c+set}" = set; then :
+  withval=$with_protoc_c; PROTOCC="$withval"
+else
+  PROTOCC='protoc-c'
 fi
-if test -z "$CPP"; then
-  if ${ac_cv_prog_CPP+:} false; then :
+
+
+	# Extract the first word of "${PROTOCC}", so it can be a program name with args.
+set dummy ${PROTOCC}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PROTOCC_TEST+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-      # Double quotes because CPP needs to be expanded
-    for CPP in "$CC -E" "$CC -E -traditional-cpp" "/lib/cpp"
-    do
-      ac_preproc_ok=false
-for ac_c_preproc_warn_flag in '' yes
+  case $PROTOCC_TEST in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PROTOCC_TEST="$PROTOCC_TEST" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
 do
-  # Use a header file that comes with gcc, so configuring glibc
-  # with a fresh cross-compiler works.
-  # Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-  # <limits.h> exists even on freestanding compilers.
-  # On the NeXT, cc -E runs the code through the compiler's parser,
-  # not just through cpp. "Syntax error" is here to catch this case.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-		     Syntax error
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-
-else
-  # Broken: fails on valid input.
-continue
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-
-  # OK, works on sane cases.  Now check whether nonexistent headers
-  # can be detected and how.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ac_nonexistent.h>
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-  # Broken: success on invalid input.
-continue
-else
-  # Passes both tests.
-ac_preproc_ok=:
-break
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PROTOCC_TEST="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
 done
-# Because of `break', _AC_PREPROC_IFELSE's cleaning code was skipped.
-rm -f conftest.i conftest.err conftest.$ac_ext
-if $ac_preproc_ok; then :
-  break
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PROTOCC_TEST" && ac_cv_path_PROTOCC_TEST="no"
+  ;;
+esac
 fi
-
-    done
-    ac_cv_prog_CPP=$CPP
-
-fi
-  CPP=$ac_cv_prog_CPP
-else
-  ac_cv_prog_CPP=$CPP
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CPP" >&5
-$as_echo "$CPP" >&6; }
-ac_preproc_ok=false
-for ac_c_preproc_warn_flag in '' yes
-do
-  # Use a header file that comes with gcc, so configuring glibc
-  # with a fresh cross-compiler works.
-  # Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-  # <limits.h> exists even on freestanding compilers.
-  # On the NeXT, cc -E runs the code through the compiler's parser,
-  # not just through cpp. "Syntax error" is here to catch this case.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-		     Syntax error
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-
-else
-  # Broken: fails on valid input.
-continue
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-
-  # OK, works on sane cases.  Now check whether nonexistent headers
-  # can be detected and how.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ac_nonexistent.h>
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-  # Broken: success on invalid input.
-continue
-else
-  # Passes both tests.
-ac_preproc_ok=:
-break
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-
-done
-# Because of `break', _AC_PREPROC_IFELSE's cleaning code was skipped.
-rm -f conftest.i conftest.err conftest.$ac_ext
-if $ac_preproc_ok; then :
-
-else
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "C preprocessor \"$CPP\" fails sanity check
-See \`config.log' for more details" "$LINENO" 5; }
-fi
-
-ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-
-
-
-sm_lib_safe=`echo "c" | sed 'y%./+-%__p_%'`
-sm_func_safe=`echo "printf" | sed 'y%./+-%__p_%'`
-
-old_LIBS="$LIBS"
-old_CPPFLAGS="$CPPFLAGS"
-smart_lib=
-smart_ldflags=
-smart_lib_dir=
-
-if test "x$smart_try_dir" != "x"; then
-  for try in $smart_try_dir; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for printf in -lc in $try" >&5
-$as_echo_n "checking for printf in -lc in $try... " >&6; }
-    LIBS="-lc $old_LIBS"
-    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-extern char printf();
-int
-main ()
-{
-printf()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-
-		 smart_lib="-lc"
-		 smart_ldflags="-L$try -Wl,-rpath,$try"
-		 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-		 break
-
+PROTOCC_TEST=$ac_cv_path_PROTOCC_TEST
+if test -n "$PROTOCC_TEST"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PROTOCC_TEST" >&5
+$as_echo "$PROTOCC_TEST" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  done
-  LIBS="$old_LIBS"
-  CPPFLAGS="$old_CPPFLAGS"
+
+
+	if test "${PROTOCC_TEST}" == "no"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ProtoBuf compiler \"${PROTOCC}\" not found. Could not regenerate rlm_zmq.proto" >&5
+$as_echo "$as_me: WARNING: ProtoBuf compiler \"${PROTOCC}\" not found. Could not regenerate rlm_zmq.proto" >&2;}
 fi
 
-if test "x$smart_lib" = "x"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for printf in -lc" >&5
-$as_echo_n "checking for printf in -lc... " >&6; }
-  LIBS="-lc $old_LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-extern char printf();
-int
-main ()
-{
-printf()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
 
-	        smart_lib="-lc"
-	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
 
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  LIBS="$old_LIBS"
+
+		zmq_include_dir=
+
+# Check whether --with-zmq-include-dir was given.
+if test "${with_zmq_include_dir+set}" = set; then :
+  withval=$with_zmq_include_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need zmq-include-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				zmq_include_dir="$withval"
+			;;
+		esac
 fi
 
-if test "x$smart_lib" = "x"; then
 
+		zmq_lib_dir=
 
-if test "x$LOCATE" != "x"; then
-        DIRS=
-  file=libc${libltdl_cv_shlibext}
-
-  for x in `${LOCATE} $file 2>/dev/null`; do
-                                        base=`echo $x | sed "s%/${file}%%"`
-    if test "x$x" = "x$base"; then
-      continue;
-    fi
-
-    dir=`${DIRNAME} $x 2>/dev/null`
-                exclude=`echo ${dir} | ${GREP} /home`
-    if test "x$exclude" != "x"; then
-      continue
-    fi
-
-                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
-    if test "x$already" = "x"; then
-      DIRS="$DIRS $dir"
-    fi
-  done
+# Check whether --with-zmq-lib-dir was given.
+if test "${with_zmq_lib_dir+set}" = set; then :
+  withval=$with_zmq_lib_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need zmq-lib-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				zmq_lib_dir="$withval"
+			;;
+		esac
 fi
 
-eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
 
 
-
-if test "x$LOCATE" != "x"; then
-        DIRS=
-  file=libc.a
-
-  for x in `${LOCATE} $file 2>/dev/null`; do
-                                        base=`echo $x | sed "s%/${file}%%"`
-    if test "x$x" = "x$base"; then
-      continue;
-    fi
-
-    dir=`${DIRNAME} $x 2>/dev/null`
-                exclude=`echo ${dir} | ${GREP} /home`
-    if test "x$exclude" != "x"; then
-      continue
-    fi
-
-                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
-    if test "x$already" = "x"; then
-      DIRS="$DIRS $dir"
-    fi
-  done
+# Check whether --with-zmq-dir was given.
+if test "${with_zmq_dir+set}" = set; then :
+  withval=$with_zmq_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need zmq-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				zmq_lib_dir="$withval/lib"
+				zmq_include_dir="$withval/include"
+			;;
+		esac
 fi
 
-eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
 
 
-  for try in $smart_lib_dir /usr/local/lib /opt/lib; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for printf in -lc in $try" >&5
-$as_echo_n "checking for printf in -lc in $try... " >&6; }
-    LIBS="-lc $old_LIBS"
-    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-extern char printf();
-int
-main ()
-{
-printf()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+	have_zmq="yes"
 
-		  smart_lib="-lc"
-		  smart_ldflags="-L$try -Wl,-rpath,$try"
-		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-		  break
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  done
-  LIBS="$old_LIBS"
-  CPPFLAGS="$old_CPPFLAGS"
-fi
-
-if test "x$smart_lib" != "x"; then
-  eval "ac_cv_lib_${sm_lib_safe}_${sm_func_safe}=yes"
-  LIBS="$smart_ldflags $smart_lib $old_LIBS"
-  SMART_LIBS="$smart_ldflags $smart_lib $SMART_LIBS"
-fi
-
-	if test "x$ac_cv_lib_c_printf" != "xyes"; then
-		fail="$fail libc"
-	fi
+	smart_prefix=""
+	smart_try_dir="$zmq_include_dir"
 
 
 
-ac_safe=`echo "stdio.h" | sed 'y%./+-%__pm%'`
+ac_safe=`echo "zmq.h" | sed 'y%./+-%__pm%'`
 old_CPPFLAGS="$CPPFLAGS"
 smart_include=
 smart_include_dir="/usr/local/include /opt/include"
@@ -2944,13 +2731,13 @@ done
 
 if test "x$_smart_try_dir" != "x"; then
   for try in $_smart_try_dir; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdio.h in $try" >&5
-$as_echo_n "checking for stdio.h in $try... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq.h in $try" >&5
+$as_echo_n "checking for zmq.h in $try... " >&6; }
     CPPFLAGS="-isystem $try $old_CPPFLAGS"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		    #include <stdio.h>
+		    #include <zmq.h>
 int
 main ()
 {
@@ -2980,13 +2767,13 @@ fi
 
 if test "x$smart_include" = "x"; then
   for _prefix in $smart_prefix; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${_prefix}/stdio.h" >&5
-$as_echo_n "checking for ${_prefix}/stdio.h... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${_prefix}/zmq.h" >&5
+$as_echo_n "checking for ${_prefix}/zmq.h... " >&6; }
 
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		    #include <stdio.h>
+		    #include <zmq.h>
 int
 main ()
 {
@@ -3014,13 +2801,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
 if test "x$smart_include" = "x"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdio.h" >&5
-$as_echo_n "checking for stdio.h... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq.h" >&5
+$as_echo_n "checking for zmq.h... " >&6; }
 
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		    #include <stdio.h>
+		    #include <zmq.h>
 int
 main ()
 {
@@ -3081,7 +2868,7 @@ eval "_smart_include_dir=\"\$_smart_include_dir $DIRS\""
 
 if test "x$LOCATE" != "x"; then
         DIRS=
-  file=stdio.h
+  file=zmq.h
 
   for x in `${LOCATE} $file 2>/dev/null`; do
                                         base=`echo $x | sed "s%/${file}%%"`
@@ -3106,13 +2893,13 @@ eval "_smart_include_dir=\"\$_smart_include_dir $DIRS\""
 
 
   for try in $_smart_include_dir; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdio.h in $try" >&5
-$as_echo_n "checking for stdio.h in $try... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq.h in $try" >&5
+$as_echo_n "checking for zmq.h in $try... " >&6; }
     CPPFLAGS="-isystem $try $old_CPPFLAGS"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		    #include <stdio.h>
+		    #include <zmq.h>
 int
 main ()
 {
@@ -3148,9 +2935,674 @@ fi
 
 smart_prefix=
 
-	if test "$ac_cv_header_stdio_h" != "yes"; then
-		fail="$fail stdio.h"
+	if test "x$ac_cv_header_zmq_h" != "xyes"; then
+		have_zmq="no"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: zmq headers not found. Use --with-zmq-include-dir=<path>." >&5
+$as_echo "$as_me: WARNING: zmq headers not found. Use --with-zmq-include-dir=<path>." >&2;}
 	fi
+
+
+	smart_try_dir="$zmq_lib_dir"
+
+
+sm_lib_safe=`echo "zmq" | sed 'y%./+-%__p_%'`
+sm_func_safe=`echo "zmq_init" | sed 'y%./+-%__p_%'`
+
+old_LIBS="$LIBS"
+old_CPPFLAGS="$CPPFLAGS"
+smart_lib=
+smart_ldflags=
+smart_lib_dir=
+
+if test "x$smart_try_dir" != "x"; then
+  for try in $smart_try_dir; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq_init in -lzmq in $try" >&5
+$as_echo_n "checking for zmq_init in -lzmq in $try... " >&6; }
+    LIBS="-lzmq $old_LIBS"
+    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char zmq_init();
+int
+main ()
+{
+zmq_init()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+		 smart_lib="-lzmq"
+		 smart_ldflags="-L$try -Wl,-rpath,$try"
+		 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		 break
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  done
+  LIBS="$old_LIBS"
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_lib" = "x"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq_init in -lzmq" >&5
+$as_echo_n "checking for zmq_init in -lzmq... " >&6; }
+  LIBS="-lzmq $old_LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char zmq_init();
+int
+main ()
+{
+zmq_init()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+	        smart_lib="-lzmq"
+	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  LIBS="$old_LIBS"
+fi
+
+if test "x$smart_lib" = "x"; then
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file=libzmq${libltdl_cv_shlibext}
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
+
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file=libzmq.a
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
+
+
+  for try in $smart_lib_dir /usr/local/lib /opt/lib; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq_init in -lzmq in $try" >&5
+$as_echo_n "checking for zmq_init in -lzmq in $try... " >&6; }
+    LIBS="-lzmq $old_LIBS"
+    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char zmq_init();
+int
+main ()
+{
+zmq_init()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+		  smart_lib="-lzmq"
+		  smart_ldflags="-L$try -Wl,-rpath,$try"
+		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		  break
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  done
+  LIBS="$old_LIBS"
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_lib" != "x"; then
+  eval "ac_cv_lib_${sm_lib_safe}_${sm_func_safe}=yes"
+  LIBS="$smart_ldflags $smart_lib $old_LIBS"
+  SMART_LIBS="$smart_ldflags $smart_lib $SMART_LIBS"
+fi
+
+	if test "x$ac_cv_lib_zmq_zmq_init" != "xyes"; then
+		have_zmq="no"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: zmq libraries not found. Use --with-zmq-lib-dir=<path>." >&5
+$as_echo "$as_me: WARNING: zmq libraries not found. Use --with-zmq-lib-dir=<path>." >&2;}
+	fi
+
+	if test x"$have_zmq" != x"yes"; then
+		fail="$fail libzmq"
+	fi
+
+
+		protobufc_include_dir=
+
+# Check whether --with-protobufc-include-dir was given.
+if test "${with_protobufc_include_dir+set}" = set; then :
+  withval=$with_protobufc_include_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need protobufc-include-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				protobufc_include_dir="$withval"
+			;;
+		esac
+fi
+
+
+		protobufc_lib_dir=
+
+# Check whether --with-protobufc-lib-dir was given.
+if test "${with_protobufc_lib_dir+set}" = set; then :
+  withval=$with_protobufc_lib_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need protobufc-lib-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				protobufc_lib_dir="$withval"
+			;;
+		esac
+fi
+
+
+
+# Check whether --with-protobufc-dir was given.
+if test "${with_protobufc_dir+set}" = set; then :
+  withval=$with_protobufc_dir; case "$withval" in
+			no)
+				as_fn_error $? "Need protobufc-dir" "$LINENO" 5
+			;;
+			yes)
+			;;
+			*)
+				protobufc_lib_dir="$withval/lib"
+				protobufc_include_dir="$withval/include"
+			;;
+		esac
+fi
+
+
+
+	have_protobuf_c="yes"
+
+	smart_prefix="protobuf-c"
+	smart_try_dir="$protobufc_include_dir"
+
+
+ac_safe=`echo "protobuf-c.h" | sed 'y%./+-%__pm%'`
+old_CPPFLAGS="$CPPFLAGS"
+smart_include=
+smart_include_dir="/usr/local/include /opt/include"
+
+_smart_try_dir=
+_smart_include_dir=
+
+for _prefix in $smart_prefix ""; do
+  for _dir in $smart_try_dir; do
+    _smart_try_dir="${_smart_try_dir} ${_dir}/${_prefix}"
+  done
+
+  for _dir in $smart_include_dir; do
+    _smart_include_dir="${_smart_include_dir} ${_dir}/${_prefix}"
+  done
+done
+
+if test "x$_smart_try_dir" != "x"; then
+  for try in $_smart_try_dir; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf-c.h in $try" >&5
+$as_echo_n "checking for protobuf-c.h in $try... " >&6; }
+    CPPFLAGS="-isystem $try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		    #include <protobuf-c.h>
+int
+main ()
+{
+int a = 1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		     smart_include="-isystem $try"
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		     break
+
+else
+
+		     smart_include=
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  done
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_include" = "x"; then
+  for _prefix in $smart_prefix; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${_prefix}/protobuf-c.h" >&5
+$as_echo_n "checking for ${_prefix}/protobuf-c.h... " >&6; }
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		    #include <protobuf-c.h>
+int
+main ()
+{
+int a = 1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		     smart_include="-isystem ${_prefix}/"
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		     break
+
+else
+
+		     smart_include=
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  done
+fi
+
+if test "x$smart_include" = "x"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf-c.h" >&5
+$as_echo_n "checking for protobuf-c.h... " >&6; }
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		    #include <protobuf-c.h>
+int
+main ()
+{
+int a = 1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		     smart_include=" "
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		     break
+
+else
+
+		     smart_include=
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+if test "x$smart_include" = "x"; then
+
+  for prefix in $smart_prefix; do
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file="${_prefix}/${1}"
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$_smart_include_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "_smart_include_dir=\"\$_smart_include_dir $DIRS\""
+
+  done
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file=protobuf-c.h
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$_smart_include_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "_smart_include_dir=\"\$_smart_include_dir $DIRS\""
+
+
+  for try in $_smart_include_dir; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf-c.h in $try" >&5
+$as_echo_n "checking for protobuf-c.h in $try... " >&6; }
+    CPPFLAGS="-isystem $try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		    #include <protobuf-c.h>
+int
+main ()
+{
+int a = 1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		     smart_include="-isystem $try"
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		     break
+
+else
+
+		     smart_include=
+		     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  done
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_include" != "x"; then
+  eval "ac_cv_header_$ac_safe=yes"
+  CPPFLAGS="$smart_include $old_CPPFLAGS"
+  SMART_CPPFLAGS="$smart_include $SMART_CPPFLAGS"
+fi
+
+smart_prefix=
+
+	if test "x$ac_cv_header_protobufmc_h" != "xyes"; then
+		have_protobuf_c="no"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: protobuf-c headers not found. Use --with-protobufc-include-dir=<path>." >&5
+$as_echo "$as_me: WARNING: protobuf-c headers not found. Use --with-protobufc-include-dir=<path>." >&2;}
+	fi
+
+
+	smart_try_dir="$protobufc_lib_dir"
+
+
+sm_lib_safe=`echo "protobuf-c" | sed 'y%./+-%__p_%'`
+sm_func_safe=`echo "protobuf_c_version" | sed 'y%./+-%__p_%'`
+
+old_LIBS="$LIBS"
+old_CPPFLAGS="$CPPFLAGS"
+smart_lib=
+smart_ldflags=
+smart_lib_dir=
+
+if test "x$smart_try_dir" != "x"; then
+  for try in $smart_try_dir; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf_c_version in -lprotobuf-c in $try" >&5
+$as_echo_n "checking for protobuf_c_version in -lprotobuf-c in $try... " >&6; }
+    LIBS="-lprotobuf-c $old_LIBS"
+    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char protobuf_c_version();
+int
+main ()
+{
+protobuf_c_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+		 smart_lib="-lprotobuf-c"
+		 smart_ldflags="-L$try -Wl,-rpath,$try"
+		 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		 break
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  done
+  LIBS="$old_LIBS"
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_lib" = "x"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf_c_version in -lprotobuf-c" >&5
+$as_echo_n "checking for protobuf_c_version in -lprotobuf-c... " >&6; }
+  LIBS="-lprotobuf-c $old_LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char protobuf_c_version();
+int
+main ()
+{
+protobuf_c_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+	        smart_lib="-lprotobuf-c"
+	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  LIBS="$old_LIBS"
+fi
+
+if test "x$smart_lib" = "x"; then
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file=libprotobuf-c${libltdl_cv_shlibext}
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
+
+
+
+if test "x$LOCATE" != "x"; then
+        DIRS=
+  file=libprotobuf-c.a
+
+  for x in `${LOCATE} $file 2>/dev/null`; do
+                                        base=`echo $x | sed "s%/${file}%%"`
+    if test "x$x" = "x$base"; then
+      continue;
+    fi
+
+    dir=`${DIRNAME} $x 2>/dev/null`
+                exclude=`echo ${dir} | ${GREP} /home`
+    if test "x$exclude" != "x"; then
+      continue
+    fi
+
+                    already=`echo \$smart_lib_dir ${DIRS} | ${GREP} ${dir}`
+    if test "x$already" = "x"; then
+      DIRS="$DIRS $dir"
+    fi
+  done
+fi
+
+eval "smart_lib_dir=\"\$smart_lib_dir $DIRS\""
+
+
+  for try in $smart_lib_dir /usr/local/lib /opt/lib; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for protobuf_c_version in -lprotobuf-c in $try" >&5
+$as_echo_n "checking for protobuf_c_version in -lprotobuf-c in $try... " >&6; }
+    LIBS="-lprotobuf-c $old_LIBS"
+    CPPFLAGS="-L$try -Wl,-rpath,$try $old_CPPFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+extern char protobuf_c_version();
+int
+main ()
+{
+protobuf_c_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+		  smart_lib="-lprotobuf-c"
+		  smart_ldflags="-L$try -Wl,-rpath,$try"
+		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		  break
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  done
+  LIBS="$old_LIBS"
+  CPPFLAGS="$old_CPPFLAGS"
+fi
+
+if test "x$smart_lib" != "x"; then
+  eval "ac_cv_lib_${sm_lib_safe}_${sm_func_safe}=yes"
+  LIBS="$smart_ldflags $smart_lib $old_LIBS"
+  SMART_LIBS="$smart_ldflags $smart_lib $SMART_LIBS"
+fi
+
+	if test "x$ac_cv_lib_protobuf_c_protobuf_c_version" != "xyes"; then
+		have_protobuf_c="no"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: protobuf-c libraries not found. Use --with-libprotobufc-lib-dir=<path>." >&5
+$as_echo "$as_me: WARNING: protobuf-c libraries not found. Use --with-libprotobufc-lib-dir=<path>." >&2;}
+	fi
+
+	if test x"$have_protobuf_c" != x"yes"; then
+		fail="$fail protobuf-c"
+	fi
+
+
 	targetname=rlm_zmq
 else
 	targetname=
