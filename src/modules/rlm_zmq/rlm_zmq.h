@@ -8,6 +8,8 @@
 #ifndef _RLM_ZMQ_H
 #define _RLM_ZMQ_H
 
+RCSIDH(other_h, "$Id$")
+
 #include <freeradius-devel/connection.h>
 
 /*

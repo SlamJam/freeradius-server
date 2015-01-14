@@ -1,5 +1,5 @@
 /*
- * other.c
+ * zmq.c
  *
  * Version:	$Id$
  *
@@ -25,7 +25,7 @@ RCSID("$Id$")
 
 #include <stdio.h>
 
-#include "other.h"
+#include "zmq.h"
 
 /*
  *  This is a sample C file which does nothing.
