@@ -1,0 +1,34 @@
+
+message FR_AVP {
+    required uint32 code = 1;
+}
+
+message FR_Packet {
+    required uint32 code = 1;
+    required uint32 id = 2;
+    repeated FR_AVP attrs = 3;
+}
+
+message FR_Request {
+    optional FR_Packet packet = 1;
+    optional FR_Packet reply = 2;
+}
+
+enum RLM_RCODE {
+    REJECT      = 0;    // Immediately reject the request.
+    FAIL        = 1;    // Module failed, don't reply.
+    OK          = 2;    // The module is OK, continue.
+    HANDLED     = 3;    // The module handled the request, so stop.
+    INVALID     = 4;    // The module considers the request invalid.
+    USERLOCK    = 5;    // Reject the request (user is locked out).
+    NOTFOUND    = 6;    // User not found.
+    NOOP        = 7;    // Module succeeded without doing anything.
+    UPDATED     = 8;    // OK (pairs modified).
+    NUMCODES    = 9;    // How many valid return codes there are.
+    UNKNOWN     = 10;   // Error resolving rcode (should not be returned by modules).
+}
+
+message Request {
+
+    required RLM_RCODE rcode = 4 [default = NOOP];
+}
