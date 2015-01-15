@@ -1,7 +1,7 @@
 /*************************************************************************** *
  * * rlm_zmq.h           rlm_zmq - FreeRADIUS ZMQ Module                     *
  * *                                                                         *
- * *     Header for main SQL module file                                     *
+ * *     Header for main ZMQ module file                                     *
  * *                                                                         *
  * *                   Anton Shurpin <anton.shurpin@gmail.com>               *
  * ***************************************************************************/
@@ -10,7 +10,7 @@
 
 RCSIDH(rlm_zmq_h, "$Id$")
 
-#include <freeradius-devel/connection.h>
+#include <freeradius-devel/radiusd.h>
 
 /*
  *  Define a structure for our module configuration.
@@ -20,9 +20,10 @@ RCSIDH(rlm_zmq_h, "$Id$")
  *  be used as the instance handle.
  */
 typedef struct rlm_zmq_t {
+	char const				*xlat_name;		// Instance name.
 	CONF_SECTION			*cs;
 	void 					*zmq_context;
-	char const				*zmq_addr;
+	char const				*connect_uri;	// URI we attempt to connect to
 	fr_connection_pool_t	*pool;
 } rlm_zmq_t;
 
