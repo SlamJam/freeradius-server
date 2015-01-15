@@ -179,6 +179,49 @@ void   request__free_unpacked
   assert(message->base.descriptor == &request__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   response__init
+                     (Response         *message)
+{
+  static Response init_value = RESPONSE__INIT;
+  *message = init_value;
+}
+size_t response__get_packed_size
+                     (const Response *message)
+{
+  assert(message->base.descriptor == &response__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t response__pack
+                     (const Response *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &response__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t response__pack_to_buffer
+                     (const Response *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &response__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Response *
+       response__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Response *)
+     protobuf_c_message_unpack (&response__descriptor,
+                                allocator, len, data);
+}
+void   response__free_unpacked
+                     (Response *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &response__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 static const ProtobufCFieldDescriptor fr__avp__field_descriptors[1] =
 {
   {
@@ -332,30 +375,29 @@ const ProtobufCMessageDescriptor fr__request__descriptor =
   (ProtobufCMessageInit) fr__request__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const RLMRCODE request__rcode__default_value = RLM__RCODE__NOOP;
 static const ProtobufCFieldDescriptor request__field_descriptors[4] =
 {
   {
-    "req",
+    "component",
     1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_ENUM,
+    0,   /* quantifier_offset */
+    offsetof(Request, component),
+    &rlm__component__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "req",
+    2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Request, req),
     &fr__request__descriptor,
     NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "rcode",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_ENUM,
-    0,   /* quantifier_offset */
-    offsetof(Request, rcode),
-    &rlm__rcode__descriptor,
-    &request__rcode__default_value,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
@@ -385,9 +427,9 @@ static const ProtobufCFieldDescriptor request__field_descriptors[4] =
   },
 };
 static const unsigned request__field_indices_by_name[] = {
+  0,   /* field[0] = component */
   2,   /* field[2] = config_items */
-  1,   /* field[1] = rcode */
-  0,   /* field[0] = req */
+  1,   /* field[1] = req */
   3,   /* field[3] = state */
 };
 static const ProtobufCIntRange request__number_ranges[1 + 1] =
@@ -408,6 +450,45 @@ const ProtobufCMessageDescriptor request__descriptor =
   request__field_indices_by_name,
   1,  request__number_ranges,
   (ProtobufCMessageInit) request__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const RLMRCODE response__rcode__default_value = RLM__RCODE__NOOP;
+static const ProtobufCFieldDescriptor response__field_descriptors[1] =
+{
+  {
+    "rcode",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_ENUM,
+    0,   /* quantifier_offset */
+    offsetof(Response, rcode),
+    &rlm__rcode__descriptor,
+    &response__rcode__default_value,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned response__field_indices_by_name[] = {
+  0,   /* field[0] = rcode */
+};
+static const ProtobufCIntRange response__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor response__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "Response",
+  "Response",
+  "Response",
+  "",
+  sizeof(Response),
+  1,
+  response__field_descriptors,
+  response__field_indices_by_name,
+  1,  response__number_ranges,
+  (ProtobufCMessageInit) response__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =
@@ -454,5 +535,49 @@ const ProtobufCEnumDescriptor rlm__rcode__descriptor =
   rlm__rcode__enum_values_by_name,
   1,
   rlm__rcode__value_ranges,
+  NULL,NULL,NULL,NULL   /* reserved[1234] */
+};
+const ProtobufCEnumValue rlm__component__enum_values_by_number[10] =
+{
+  { "AUTH", "RLM__COMPONENT__AUTH", 0 },
+  { "AUTZ", "RLM__COMPONENT__AUTZ", 1 },
+  { "PREACCT", "RLM__COMPONENT__PREACCT", 2 },
+  { "ACCT", "RLM__COMPONENT__ACCT", 3 },
+  { "SESS", "RLM__COMPONENT__SESS", 4 },
+  { "PRE_PROXY", "RLM__COMPONENT__PRE_PROXY", 5 },
+  { "POST_PROXY", "RLM__COMPONENT__POST_PROXY", 6 },
+  { "POST_AUTH", "RLM__COMPONENT__POST_AUTH", 7 },
+  { "RECV_COA", "RLM__COMPONENT__RECV_COA", 8 },
+  { "SEND_COA", "RLM__COMPONENT__SEND_COA", 9 },
+};
+static const ProtobufCIntRange rlm__component__value_ranges[] = {
+{0, 0},{0, 10}
+};
+const ProtobufCEnumValueIndex rlm__component__enum_values_by_name[10] =
+{
+  { "ACCT", 3 },
+  { "AUTH", 0 },
+  { "AUTZ", 1 },
+  { "POST_AUTH", 7 },
+  { "POST_PROXY", 6 },
+  { "PREACCT", 2 },
+  { "PRE_PROXY", 5 },
+  { "RECV_COA", 8 },
+  { "SEND_COA", 9 },
+  { "SESS", 4 },
+};
+const ProtobufCEnumDescriptor rlm__component__descriptor =
+{
+  PROTOBUF_C__ENUM_DESCRIPTOR_MAGIC,
+  "RLM_COMPONENT",
+  "RLM_COMPONENT",
+  "RLMCOMPONENT",
+  "",
+  10,
+  rlm__component__enum_values_by_number,
+  10,
+  rlm__component__enum_values_by_name,
+  1,
+  rlm__component__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };

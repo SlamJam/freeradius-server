@@ -28,9 +28,26 @@ enum RLM_RCODE {
     UNKNOWN     = 10;   // Error resolving rcode (should not be returned by modules).
 }
 
+enum RLM_COMPONENT {
+    AUTH        = 0;    // authenticate section.
+    AUTZ        = 1;    // authorize section.
+    PREACCT     = 2;    // preacct section.
+    ACCT        = 3;    // accounting section.
+    SESS        = 4;    // checksimul section.
+    PRE_PROXY   = 5;    // preproxy section.
+    POST_PROXY  = 6;    // postproxy section.
+    POST_AUTH   = 7;    // postauth section.
+    RECV_COA    = 8;    // recvcoa section.
+    SEND_COA    = 9;    // sendcoa section.
+}
+
 message Request {
-    required FR_Request req = 1;
-    required RLM_RCODE rcode = 2 [default = NOOP];
+    required RLM_COMPONENT component = 1;
+    required FR_Request req = 2;
     repeated FR_AVP config_items = 3;
     repeated FR_AVP state = 4;
+}
+
+message Response {
+    required RLM_RCODE rcode = 1 [default = NOOP];
 }

@@ -19,6 +19,7 @@ typedef struct _FRAVP FRAVP;
 typedef struct _FRPacket FRPacket;
 typedef struct _FRRequest FRRequest;
 typedef struct _Request Request;
+typedef struct _Response Response;
 
 
 /* --- enums --- */
@@ -37,6 +38,19 @@ typedef enum _RLMRCODE {
   RLM__RCODE__UNKNOWN = 10
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(RLM__RCODE)
 } RLMRCODE;
+typedef enum _RLMCOMPONENT {
+  RLM__COMPONENT__AUTH = 0,
+  RLM__COMPONENT__AUTZ = 1,
+  RLM__COMPONENT__PREACCT = 2,
+  RLM__COMPONENT__ACCT = 3,
+  RLM__COMPONENT__SESS = 4,
+  RLM__COMPONENT__PRE_PROXY = 5,
+  RLM__COMPONENT__POST_PROXY = 6,
+  RLM__COMPONENT__POST_AUTH = 7,
+  RLM__COMPONENT__RECV_COA = 8,
+  RLM__COMPONENT__SEND_COA = 9
+    PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(RLM__COMPONENT)
+} RLMCOMPONENT;
 
 /* --- messages --- */
 
@@ -77,8 +91,8 @@ struct  _FRRequest
 struct  _Request
 {
   ProtobufCMessage base;
+  RLMCOMPONENT component;
   FRRequest *req;
-  RLMRCODE rcode;
   size_t n_config_items;
   FRAVP **config_items;
   size_t n_state;
@@ -86,7 +100,17 @@ struct  _Request
 };
 #define REQUEST__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&request__descriptor) \
-    , NULL, RLM__RCODE__NOOP, 0,NULL, 0,NULL }
+    , 0, NULL, 0,NULL, 0,NULL }
+
+
+struct  _Response
+{
+  ProtobufCMessage base;
+  RLMRCODE rcode;
+};
+#define RESPONSE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&response__descriptor) \
+    , RLM__RCODE__NOOP }
 
 
 /* FRAVP methods */
@@ -165,6 +189,25 @@ Request *
 void   request__free_unpacked
                      (Request *message,
                       ProtobufCAllocator *allocator);
+/* Response methods */
+void   response__init
+                     (Response         *message);
+size_t response__get_packed_size
+                     (const Response   *message);
+size_t response__pack
+                     (const Response   *message,
+                      uint8_t             *out);
+size_t response__pack_to_buffer
+                     (const Response   *message,
+                      ProtobufCBuffer     *buffer);
+Response *
+       response__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   response__free_unpacked
+                     (Response *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*FRAVP_Closure)
@@ -179,6 +222,9 @@ typedef void (*FRRequest_Closure)
 typedef void (*Request_Closure)
                  (const Request *message,
                   void *closure_data);
+typedef void (*Response_Closure)
+                 (const Response *message,
+                  void *closure_data);
 
 /* --- services --- */
 
@@ -186,10 +232,12 @@ typedef void (*Request_Closure)
 /* --- descriptors --- */
 
 extern const ProtobufCEnumDescriptor    rlm__rcode__descriptor;
+extern const ProtobufCEnumDescriptor    rlm__component__descriptor;
 extern const ProtobufCMessageDescriptor fr__avp__descriptor;
 extern const ProtobufCMessageDescriptor fr__packet__descriptor;
 extern const ProtobufCMessageDescriptor fr__request__descriptor;
 extern const ProtobufCMessageDescriptor request__descriptor;
+extern const ProtobufCMessageDescriptor response__descriptor;
 
 PROTOBUF_C__END_DECLS
 
