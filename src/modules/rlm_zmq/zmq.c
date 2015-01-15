@@ -37,12 +37,15 @@ RCSID("$Id$")
 
 #include "rlm_zmq.h"
 #include "zmq.h"
+#include "serialize.h"
 
 rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUSED rlm_components_t comp) {
 	rlm_rcode_t rcode = RLM_MODULE_NOOP;
 
 	rlm_zmq_t *inst = instance;
 	rlm_zmq_handle_t  *handle;
+    void *buf = NULL;
+    size_t buf_len;
 
 	rad_assert(request->packet != NULL);
 	rad_assert(request->reply != NULL);
@@ -58,19 +61,19 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 		goto error;
 	}
 
-    char const *data = "hello world";
-    size_t data_len = strlen(data);
-    int res = zmq_send(handle->sock, data, data_len, 0);
+    // serialize
+    buf = serialize_freeradius_request(request, request, &buf_len);
+
+    // send
+    int res = zmq_send(handle->sock, buf, buf_len, 0);
     if (res == -1) goto error;
 
-    // serialize()
-    // send()
-    // receive()
-    // deserialize()
+    // receive
 
-
+    // deserialize
 
 release:
+    talloc_free(buf);
 	fr_connection_release(inst->pool, handle);
 	return rcode;
 

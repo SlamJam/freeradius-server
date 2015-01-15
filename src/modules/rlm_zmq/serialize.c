@@ -31,3 +31,40 @@ RCSID("$Id$")
 
 #include "rlm_zmq.pb-c.h"
 #include "rlm_zmq.h"
+
+//void pack_freeradius_vps() {}
+
+FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet, size_t *len) {
+    FRPacket pkt = FR__PACKET__INIT;
+    pkt.code = packet->code;
+    pkt.id = packet->id;
+
+    vp_cursor_t cursor;
+    VALUE_PAIR *vp;
+
+	for (vp = fr_cursor_init(&cursor, &packet->vps);
+         vp;
+         vp = fr_cursor_next(&cursor)) {
+        vp->op;
+        if (vp->da->flags.has_tag) {
+			snprintf(buf, BUF_SIZE, "%s:%d", vp->da->name, vp->tag);
+		} else {
+			strlcpy(buf, vp->da->name, sizeof(buf));
+		}
+        vp_prints_value(buf, sizeof(buf), vp, '"');
+        if (vp->da->type != PW_TYPE_STRING) continue;
+    }
+    //
+    /*
+    size_t buf_len = fr__packet__get_packed_size (&pkt);
+    *len = buf_len;
+
+    void *buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
+    fr__packet__pack (&pkt, buf);
+
+    return buf;
+    */
+    return pkt;
+}
+
+//void pack_freeradius_request() {}
