@@ -8,7 +8,7 @@
 #ifndef _RLM_ZMQ_H
 #define _RLM_ZMQ_H
 
-RCSIDH(other_h, "$Id$")
+RCSIDH(rlm_zmq_h, "$Id$")
 
 #include <freeradius-devel/connection.h>
 
@@ -20,7 +20,10 @@ RCSIDH(other_h, "$Id$")
  *  be used as the instance handle.
  */
 typedef struct rlm_zmq_t {
-	fr_connection_pool_t    *pool;
+	CONF_SECTION			*cs;
+	void 					*zmq_context;
+	char const				*zmq_addr;
+	fr_connection_pool_t	*pool;
 } rlm_zmq_t;
 
 #endif

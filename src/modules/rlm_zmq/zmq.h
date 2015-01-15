@@ -5,8 +5,11 @@
 
 RCSIDH(zmq_h, "$Id$")
 
-/* define the function */
+typedef struct rlm_zmq_handle {
+	void		*sock;	//!< ZMQ socket handle.
+	rlm_zmq_t	*inst;	//!< The rlm_zmq instance this connection belongs to.
+} rlm_zmq_handle_t;
 
-void other_function(void);
+void *mod_conn_create(TALLOC_CTX *ctx, void *instance);
 
 #endif /*_ZMQ_H*/

@@ -27,12 +27,16 @@ RCSID("$Id$")
 #include <freeradius-devel/modules.h>
 #include <freeradius-devel/rad_assert.h>
 
+#include <zmq.h>
+
 #include "rlm_zmq.h"
+#include "zmq.h"
 
 /*
  *	A mapping of configuration file names to internal variables.
  */
 static const CONF_PARSER module_config[] = {
+	{ "string", FR_CONF_OFFSET(PW_TYPE_STRING, rlm_zmq_t, zmq_addr), NULL },
 /*
 	{ "integer", FR_CONF_OFFSET(PW_TYPE_INTEGER, rlm_example_t, value), "1" },
 	{ "boolean", FR_CONF_OFFSET(PW_TYPE_BOOLEAN, rlm_example_t, boolean), "no" },
@@ -41,17 +45,6 @@ static const CONF_PARSER module_config[] = {
 */
 	{ NULL, -1, 0, NULL, NULL }		/* end the list */
 };
-
-static int rlm_example_cmp(UNUSED void *instance, REQUEST *request, UNUSED VALUE_PAIR *thing, VALUE_PAIR *check,
-			   UNUSED VALUE_PAIR *check_pairs, UNUSED VALUE_PAIR **reply_pairs)
-{
-	rad_assert(check->da->type == PW_TYPE_STRING);
-
-	RINFO("Example-Paircmp called with \"%s\"", check->vp_strvalue);
-
-	if (strcmp(check->vp_strvalue, "yes") == 0) return 0;
-	return 1;
-}
 
 /*
  *	Do any per-module initialization that is separate to each
@@ -66,30 +59,18 @@ static int rlm_example_cmp(UNUSED void *instance, REQUEST *request, UNUSED VALUE
 static int mod_instantiate(CONF_SECTION *conf, void *instance)
 {
 	rlm_zmq_t *inst = instance;
-	ATTR_FLAGS flags;
 
-	memset(&flags, 0, sizeof(flags));
-	/*
-	 *	Do more work here
-	 */
-	/*
-	if (!inst->boolean) {
-		cf_log_err_cs(conf, "Boolean is false: forcing error!");
-		return -1;
-	}
-	*/
+	inst->cs = conf;
 
-	inst->pool = fr_connection_pool_module_init(conf, inst, NULL, NULL, NULL);
+	inst->zmq_context = zmq_ctx_new();
+	if (!inst->zmq_context) return -1;
+
+	inst->pool = fr_connection_pool_module_init(inst->cs, inst, mod_conn_create, NULL, NULL);
 	if (!inst->pool) return -1;
 
-	if (dict_addattr("Example-Paircmp", -1, 0, PW_TYPE_STRING, flags) < 0) {
-		ERROR("Failed creating paircmp attribute: %s", fr_strerror());
-
-		return -1;
-	}
-
-	paircompare_register(dict_attrbyname("Example-Paircmp"), dict_attrbyvalue(PW_USER_NAME, 0), false,
-			     rlm_example_cmp, inst);
+	int major, minor, patch;
+	zmq_version (&major, &minor, &patch);
+	INFO("rlm_zmq loaded. Current ØMQ version is %d.%d.%d", major, minor, patch);
 
 	return 0;
 }
@@ -104,7 +85,16 @@ static int mod_detach(UNUSED void *instance)
 
 	if (inst->pool) fr_connection_pool_delete(inst->pool);
 
-	/* free things here */
+	/*
+	 *  We need to explicitly free all children, so if the driver
+	 *  parented any memory off the instance, their destructors
+	 *  run before we unload the bytecode for them.
+	 *
+	 *  If we don't do this, we get a SEGV deep inside the talloc code
+	 *  when it tries to call a destructor that no longer exists.
+	 */
+	talloc_free_children(inst);
+
 	return 0;
 }
 
@@ -208,13 +198,9 @@ module_t rlm_example = {
 	{
 		mod_authenticate,	/* authentication */
 		mod_authorize,	/* authorization */
-#ifdef WITH_ACCOUNTING
 		mod_preacct,	/* preaccounting */
 		mod_accounting,	/* accounting */
 		mod_checksimul,	/* checksimul */
-#else
-		NULL, NULL, NULL,
-#endif
 		NULL,			/* pre-proxy */
 		NULL,			/* post-proxy */
 		NULL			/* post-auth */
