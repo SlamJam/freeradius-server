@@ -12,6 +12,8 @@ message FR_Packet {
 message FR_Request {
     optional FR_Packet packet = 1;
     optional FR_Packet reply = 2;
+    repeated FR_AVP config_items = 3;
+    repeated FR_AVP state = 4;
 }
 
 enum RLM_RCODE {
@@ -41,13 +43,9 @@ enum RLM_COMPONENT {
     SEND_COA    = 9;    // sendcoa section.
 }
 
-message Request {
+message Mod_State {
     required RLM_COMPONENT component = 1;
-    required FR_Request req = 2;
-    repeated FR_AVP config_items = 3;
-    repeated FR_AVP state = 4;
-}
-
-message Response {
-    required RLM_RCODE rcode = 1 [default = NOOP];
+    required FR_Request request = 2;
+    required RLM_RCODE rcode = 4 [default = NOOP];
+    optional RLM_RCODE prev_rcode = 3;
 }

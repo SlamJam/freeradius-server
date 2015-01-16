@@ -18,8 +18,7 @@ PROTOBUF_C__BEGIN_DECLS
 typedef struct _FRAVP FRAVP;
 typedef struct _FRPacket FRPacket;
 typedef struct _FRRequest FRRequest;
-typedef struct _Request Request;
-typedef struct _Response Response;
+typedef struct _ModState ModState;
 
 
 /* --- enums --- */
@@ -82,35 +81,28 @@ struct  _FRRequest
   ProtobufCMessage base;
   FRPacket *packet;
   FRPacket *reply;
-};
-#define FR__REQUEST__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&fr__request__descriptor) \
-    , NULL, NULL }
-
-
-struct  _Request
-{
-  ProtobufCMessage base;
-  RLMCOMPONENT component;
-  FRRequest *req;
   size_t n_config_items;
   FRAVP **config_items;
   size_t n_state;
   FRAVP **state;
 };
-#define REQUEST__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&request__descriptor) \
-    , 0, NULL, 0,NULL, 0,NULL }
+#define FR__REQUEST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&fr__request__descriptor) \
+    , NULL, NULL, 0,NULL, 0,NULL }
 
 
-struct  _Response
+struct  _ModState
 {
   ProtobufCMessage base;
+  RLMCOMPONENT component;
+  FRRequest *request;
   RLMRCODE rcode;
+  protobuf_c_boolean has_prev_rcode;
+  RLMRCODE prev_rcode;
 };
-#define RESPONSE__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&response__descriptor) \
-    , RLM__RCODE__NOOP }
+#define MOD__STATE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mod__state__descriptor) \
+    , 0, NULL, RLM__RCODE__NOOP, 0,0 }
 
 
 /* FRAVP methods */
@@ -170,43 +162,24 @@ FRRequest *
 void   fr__request__free_unpacked
                      (FRRequest *message,
                       ProtobufCAllocator *allocator);
-/* Request methods */
-void   request__init
-                     (Request         *message);
-size_t request__get_packed_size
-                     (const Request   *message);
-size_t request__pack
-                     (const Request   *message,
+/* ModState methods */
+void   mod__state__init
+                     (ModState         *message);
+size_t mod__state__get_packed_size
+                     (const ModState   *message);
+size_t mod__state__pack
+                     (const ModState   *message,
                       uint8_t             *out);
-size_t request__pack_to_buffer
-                     (const Request   *message,
+size_t mod__state__pack_to_buffer
+                     (const ModState   *message,
                       ProtobufCBuffer     *buffer);
-Request *
-       request__unpack
+ModState *
+       mod__state__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   request__free_unpacked
-                     (Request *message,
-                      ProtobufCAllocator *allocator);
-/* Response methods */
-void   response__init
-                     (Response         *message);
-size_t response__get_packed_size
-                     (const Response   *message);
-size_t response__pack
-                     (const Response   *message,
-                      uint8_t             *out);
-size_t response__pack_to_buffer
-                     (const Response   *message,
-                      ProtobufCBuffer     *buffer);
-Response *
-       response__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data);
-void   response__free_unpacked
-                     (Response *message,
+void   mod__state__free_unpacked
+                     (ModState *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
@@ -219,11 +192,8 @@ typedef void (*FRPacket_Closure)
 typedef void (*FRRequest_Closure)
                  (const FRRequest *message,
                   void *closure_data);
-typedef void (*Request_Closure)
-                 (const Request *message,
-                  void *closure_data);
-typedef void (*Response_Closure)
-                 (const Response *message,
+typedef void (*ModState_Closure)
+                 (const ModState *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -236,8 +206,7 @@ extern const ProtobufCEnumDescriptor    rlm__component__descriptor;
 extern const ProtobufCMessageDescriptor fr__avp__descriptor;
 extern const ProtobufCMessageDescriptor fr__packet__descriptor;
 extern const ProtobufCMessageDescriptor fr__request__descriptor;
-extern const ProtobufCMessageDescriptor request__descriptor;
-extern const ProtobufCMessageDescriptor response__descriptor;
+extern const ProtobufCMessageDescriptor mod__state__descriptor;
 
 PROTOBUF_C__END_DECLS
 

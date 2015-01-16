@@ -45,7 +45,7 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 	rlm_zmq_t *inst = instance;
 	rlm_zmq_handle_t  *handle;
     void *buf = NULL;
-    size_t buf_len;
+    size_t buf_len = 0;
 
 	rad_assert(request->packet != NULL);
 	rad_assert(request->reply != NULL);
@@ -62,7 +62,7 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 	}
 
     // serialize
-    buf = serialize_freeradius_request(request, request, &buf_len);
+    //buf = serialize_mod_state(request, request, &buf_len);
 
     // send
     int res = zmq_send(handle->sock, buf, buf_len, 0);
@@ -73,7 +73,7 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
     // deserialize
 
 release:
-    talloc_free(buf);
+    TALLOC_FREE(buf);
 	fr_connection_release(inst->pool, handle);
 	return rcode;
 

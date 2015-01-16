@@ -136,90 +136,47 @@ void   fr__request__free_unpacked
   assert(message->base.descriptor == &fr__request__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   request__init
-                     (Request         *message)
+void   mod__state__init
+                     (ModState         *message)
 {
-  static Request init_value = REQUEST__INIT;
+  static ModState init_value = MOD__STATE__INIT;
   *message = init_value;
 }
-size_t request__get_packed_size
-                     (const Request *message)
+size_t mod__state__get_packed_size
+                     (const ModState *message)
 {
-  assert(message->base.descriptor == &request__descriptor);
+  assert(message->base.descriptor == &mod__state__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t request__pack
-                     (const Request *message,
+size_t mod__state__pack
+                     (const ModState *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &request__descriptor);
+  assert(message->base.descriptor == &mod__state__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t request__pack_to_buffer
-                     (const Request *message,
+size_t mod__state__pack_to_buffer
+                     (const ModState *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &request__descriptor);
+  assert(message->base.descriptor == &mod__state__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-Request *
-       request__unpack
+ModState *
+       mod__state__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (Request *)
-     protobuf_c_message_unpack (&request__descriptor,
+  return (ModState *)
+     protobuf_c_message_unpack (&mod__state__descriptor,
                                 allocator, len, data);
 }
-void   request__free_unpacked
-                     (Request *message,
+void   mod__state__free_unpacked
+                     (ModState *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &request__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
-void   response__init
-                     (Response         *message)
-{
-  static Response init_value = RESPONSE__INIT;
-  *message = init_value;
-}
-size_t response__get_packed_size
-                     (const Response *message)
-{
-  assert(message->base.descriptor == &response__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t response__pack
-                     (const Response *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &response__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t response__pack_to_buffer
-                     (const Response *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &response__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-Response *
-       response__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (Response *)
-     protobuf_c_message_unpack (&response__descriptor,
-                                allocator, len, data);
-}
-void   response__free_unpacked
-                     (Response *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &response__descriptor);
+  assert(message->base.descriptor == &mod__state__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 static const ProtobufCFieldDescriptor fr__avp__field_descriptors[1] =
@@ -324,7 +281,7 @@ const ProtobufCMessageDescriptor fr__packet__descriptor =
   (ProtobufCMessageInit) fr__packet__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor fr__request__field_descriptors[2] =
+static const ProtobufCFieldDescriptor fr__request__field_descriptors[4] =
 {
   {
     "packet",
@@ -350,64 +307,13 @@ static const ProtobufCFieldDescriptor fr__request__field_descriptors[2] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
-};
-static const unsigned fr__request__field_indices_by_name[] = {
-  0,   /* field[0] = packet */
-  1,   /* field[1] = reply */
-};
-static const ProtobufCIntRange fr__request__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 2 }
-};
-const ProtobufCMessageDescriptor fr__request__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "FR_Request",
-  "FRRequest",
-  "FRRequest",
-  "",
-  sizeof(FRRequest),
-  2,
-  fr__request__field_descriptors,
-  fr__request__field_indices_by_name,
-  1,  fr__request__number_ranges,
-  (ProtobufCMessageInit) fr__request__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor request__field_descriptors[4] =
-{
-  {
-    "component",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_ENUM,
-    0,   /* quantifier_offset */
-    offsetof(Request, component),
-    &rlm__component__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "req",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_MESSAGE,
-    0,   /* quantifier_offset */
-    offsetof(Request, req),
-    &fr__request__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
   {
     "config_items",
     3,
     PROTOBUF_C_LABEL_REPEATED,
     PROTOBUF_C_TYPE_MESSAGE,
-    offsetof(Request, n_config_items),
-    offsetof(Request, config_items),
+    offsetof(FRRequest, n_config_items),
+    offsetof(FRRequest, config_items),
     &fr__avp__descriptor,
     NULL,
     0,             /* flags */
@@ -418,77 +324,116 @@ static const ProtobufCFieldDescriptor request__field_descriptors[4] =
     4,
     PROTOBUF_C_LABEL_REPEATED,
     PROTOBUF_C_TYPE_MESSAGE,
-    offsetof(Request, n_state),
-    offsetof(Request, state),
+    offsetof(FRRequest, n_state),
+    offsetof(FRRequest, state),
     &fr__avp__descriptor,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned request__field_indices_by_name[] = {
-  0,   /* field[0] = component */
+static const unsigned fr__request__field_indices_by_name[] = {
   2,   /* field[2] = config_items */
-  1,   /* field[1] = req */
+  0,   /* field[0] = packet */
+  1,   /* field[1] = reply */
   3,   /* field[3] = state */
 };
-static const ProtobufCIntRange request__number_ranges[1 + 1] =
+static const ProtobufCIntRange fr__request__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 4 }
 };
-const ProtobufCMessageDescriptor request__descriptor =
+const ProtobufCMessageDescriptor fr__request__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "Request",
-  "Request",
-  "Request",
+  "FR_Request",
+  "FRRequest",
+  "FRRequest",
   "",
-  sizeof(Request),
+  sizeof(FRRequest),
   4,
-  request__field_descriptors,
-  request__field_indices_by_name,
-  1,  request__number_ranges,
-  (ProtobufCMessageInit) request__init,
+  fr__request__field_descriptors,
+  fr__request__field_indices_by_name,
+  1,  fr__request__number_ranges,
+  (ProtobufCMessageInit) fr__request__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const RLMRCODE response__rcode__default_value = RLM__RCODE__NOOP;
-static const ProtobufCFieldDescriptor response__field_descriptors[1] =
+static const RLMRCODE mod__state__rcode__default_value = RLM__RCODE__NOOP;
+static const ProtobufCFieldDescriptor mod__state__field_descriptors[4] =
 {
   {
-    "rcode",
+    "component",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_ENUM,
     0,   /* quantifier_offset */
-    offsetof(Response, rcode),
+    offsetof(ModState, component),
+    &rlm__component__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "request",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(ModState, request),
+    &fr__request__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "prev_rcode",
+    3,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_ENUM,
+    offsetof(ModState, has_prev_rcode),
+    offsetof(ModState, prev_rcode),
     &rlm__rcode__descriptor,
-    &response__rcode__default_value,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rcode",
+    4,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_ENUM,
+    0,   /* quantifier_offset */
+    offsetof(ModState, rcode),
+    &rlm__rcode__descriptor,
+    &mod__state__rcode__default_value,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned response__field_indices_by_name[] = {
-  0,   /* field[0] = rcode */
+static const unsigned mod__state__field_indices_by_name[] = {
+  0,   /* field[0] = component */
+  2,   /* field[2] = prev_rcode */
+  3,   /* field[3] = rcode */
+  1,   /* field[1] = request */
 };
-static const ProtobufCIntRange response__number_ranges[1 + 1] =
+static const ProtobufCIntRange mod__state__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 4 }
 };
-const ProtobufCMessageDescriptor response__descriptor =
+const ProtobufCMessageDescriptor mod__state__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "Response",
-  "Response",
-  "Response",
+  "Mod_State",
+  "ModState",
+  "ModState",
   "",
-  sizeof(Response),
-  1,
-  response__field_descriptors,
-  response__field_indices_by_name,
-  1,  response__number_ranges,
-  (ProtobufCMessageInit) response__init,
+  sizeof(ModState),
+  4,
+  mod__state__field_descriptors,
+  mod__state__field_indices_by_name,
+  1,  mod__state__number_ranges,
+  (ProtobufCMessageInit) mod__state__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =

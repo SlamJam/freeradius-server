@@ -29,12 +29,37 @@
 
 RCSID("$Id$")
 
-#include "rlm_zmq.pb-c.h"
-#include "rlm_zmq.h"
+#include "serialize.h"
 
-//void pack_freeradius_vps() {}
+// MACROS SERIALIZE(prefix)
+/*
+size_t buf_len = fr__packet__get_packed_size (&pkt);
+*len = buf_len;
 
-FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet, size_t *len) {
+void *buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
+fr__packet__pack (&pkt, buf);
+
+return buf;
+*/
+
+FRAVP pack_freeradius_valuepair(UNUSED TALLOC_CTX *ctx, UNUSED VALUE_PAIR *vp) {
+    FRAVP avp = FR__AVP__INIT;
+        /*
+        // копипаста потенциально полезного кода
+        vp->op;
+        if (vp->da->flags.has_tag) {
+			snprintf(buf, BUF_SIZE, "%s:%d", vp->da->name, vp->tag);
+		} else {
+			strlcpy(buf, vp->da->name, sizeof(buf));
+		}
+        vp_prints_value(buf, sizeof(buf), vp, '"');
+        if (vp->da->type != PW_TYPE_STRING) continue;
+        */
+    return avp;
+}
+
+
+FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet) {
     FRPacket pkt = FR__PACKET__INIT;
     pkt.code = packet->code;
     pkt.id = packet->id;
@@ -45,26 +70,20 @@ FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet, size_t *
 	for (vp = fr_cursor_init(&cursor, &packet->vps);
          vp;
          vp = fr_cursor_next(&cursor)) {
-        vp->op;
-        if (vp->da->flags.has_tag) {
-			snprintf(buf, BUF_SIZE, "%s:%d", vp->da->name, vp->tag);
-		} else {
-			strlcpy(buf, vp->da->name, sizeof(buf));
-		}
-        vp_prints_value(buf, sizeof(buf), vp, '"');
-        if (vp->da->type != PW_TYPE_STRING) continue;
+        pack_freeradius_valuepair(ctx, vp);
     }
-    //
-    /*
-    size_t buf_len = fr__packet__get_packed_size (&pkt);
-    *len = buf_len;
 
-    void *buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
-    fr__packet__pack (&pkt, buf);
-
-    return buf;
-    */
     return pkt;
 }
 
-//void pack_freeradius_request() {}
+FRRequest pack_freeradius_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request) {
+    FRRequest req = FR__REQUEST__INIT;
+
+    return req;
+}
+
+ModState pack_mod_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request, UNUSED rlm_zmq_t *inst, UNUSED rlm_components_t comp) {
+    ModState state = MOD__STATE__INIT;
+
+    return state;
+}
