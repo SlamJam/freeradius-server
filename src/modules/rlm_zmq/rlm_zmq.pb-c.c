@@ -233,9 +233,9 @@ static const ProtobufCFieldDescriptor fr__avp__field_descriptors[5] =
   {
     "tag",
     5,
-    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
+    offsetof(FRAVP, has_tag),
     offsetof(FRAVP, tag),
     NULL,
     NULL,

@@ -60,12 +60,13 @@ struct  _FRAVP
   uint32_t vendor;
   char *value;
   char *op;
+  protobuf_c_boolean has_tag;
   uint32_t tag;
 };
 extern char fr__avp__op__default_value[];
 #define FR__AVP__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fr__avp__descriptor) \
-    , 0, 0, NULL, fr__avp__op__default_value, 0 }
+    , 0, 0, NULL, fr__avp__op__default_value, 0,0 }
 
 
 struct  _FRPacket
