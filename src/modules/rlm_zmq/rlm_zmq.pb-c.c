@@ -179,15 +179,64 @@ void   mod__state__free_unpacked
   assert(message->base.descriptor == &mod__state__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor fr__avp__field_descriptors[1] =
+char fr__avp__op__default_value[] = ":=";
+static const ProtobufCFieldDescriptor fr__avp__field_descriptors[5] =
 {
   {
-    "code",
+    "attr",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(FRAVP, code),
+    offsetof(FRAVP, attr),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "vendor",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(FRAVP, vendor),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "value",
+    3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(FRAVP, value),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "op",
+    4,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(FRAVP, op),
+    NULL,
+    &fr__avp__op__default_value,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "tag",
+    5,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(FRAVP, tag),
     NULL,
     NULL,
     0,             /* flags */
@@ -195,12 +244,16 @@ static const ProtobufCFieldDescriptor fr__avp__field_descriptors[1] =
   },
 };
 static const unsigned fr__avp__field_indices_by_name[] = {
-  0,   /* field[0] = code */
+  0,   /* field[0] = attr */
+  3,   /* field[3] = op */
+  4,   /* field[4] = tag */
+  2,   /* field[2] = value */
+  1,   /* field[1] = vendor */
 };
 static const ProtobufCIntRange fr__avp__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 5 }
 };
 const ProtobufCMessageDescriptor fr__avp__descriptor =
 {
@@ -210,7 +263,7 @@ const ProtobufCMessageDescriptor fr__avp__descriptor =
   "FRAVP",
   "",
   sizeof(FRAVP),
-  1,
+  5,
   fr__avp__field_descriptors,
   fr__avp__field_indices_by_name,
   1,  fr__avp__number_ranges,

@@ -54,6 +54,17 @@ FRAVP pack_freeradius_valuepair(UNUSED TALLOC_CTX *ctx, UNUSED VALUE_PAIR *vp) {
 		}
         vp_prints_value(buf, sizeof(buf), vp, '"');
         if (vp->da->type != PW_TYPE_STRING) continue;
+        (vp->da->vendor == 0)
+        vp->da->attr
+
+        char const *fr_token_name(int token)
+        FR_TOKEN getop(char const **ptr)
+
+        int count = 0;
+        fr_cursor_first(&cursor);
+        while (fr_cursor_next_by_da(&cursor, vpt->tmpl_da, vpt->tmpl_tag)) count++;
+
+        vp_aprints_value(ctx, vp, quote); // '\0'
         */
     return avp;
 }
@@ -66,11 +77,12 @@ FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet) {
 
     vp_cursor_t cursor;
     VALUE_PAIR *vp;
+    FRAVP avp;
 
 	for (vp = fr_cursor_init(&cursor, &packet->vps);
          vp;
          vp = fr_cursor_next(&cursor)) {
-        pack_freeradius_valuepair(ctx, vp);
+        avp = pack_freeradius_valuepair(ctx, vp);
     }
 
     return pkt;
