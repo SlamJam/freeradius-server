@@ -42,60 +42,109 @@ fr__packet__pack (&pkt, buf);
 return buf;
 */
 
-FRAVP pack_freeradius_valuepair(UNUSED TALLOC_CTX *ctx, UNUSED VALUE_PAIR *vp) {
-    FRAVP avp = FR__AVP__INIT;
-        /*
-        // копипаста потенциально полезного кода
-        vp->op;
-        if (vp->da->flags.has_tag) {
-			snprintf(buf, BUF_SIZE, "%s:%d", vp->da->name, vp->tag);
-		} else {
-			strlcpy(buf, vp->da->name, sizeof(buf));
-		}
-        vp_prints_value(buf, sizeof(buf), vp, '"');
-        if (vp->da->type != PW_TYPE_STRING) continue;
-        (vp->da->vendor == 0)
-        vp->da->attr
+/*
+// копипаста потенциально полезного кода
+FR_TOKEN getop(char const **ptr)
+*/
 
-        char const *fr_token_name(int token)
-        FR_TOKEN getop(char const **ptr)
+#define TALLOC_PROTOBUF(ctx, type) talloc_zero(ctx, type)
 
-        int count = 0;
-        fr_cursor_first(&cursor);
-        while (fr_cursor_next_by_da(&cursor, vpt->tmpl_da, vpt->tmpl_tag)) count++;
+static int count_vps(const VALUE_PAIR *vps) {
+    int count = 0;
+    vp_cursor_t cursor;
 
-        vp_aprints_value(ctx, vp, quote); // '\0'
-        */
+    fr_cursor_init(&cursor, vps);
+
+    while (fr_cursor_next(&cursor)) {
+        count++;
+    }
+
+    return count;
+}
+
+FRAVP *pack_freeradius_valuepair(TALLOC_CTX *ctx, const VALUE_PAIR *vp) {
+    FRAVP *avp = talloc_zero(ctx, FRAVP);
+    fr__avp__init(avp);
+
+    avp->attr = vp->da->attr;
+    avp->vendor = vp->da->vendor;
+    avp->value = vp_aprints_value(ctx, vp, '\0');
+    avp->op = fr_token_name(vp->op);
+    if (vp->da->flags.has_tag) {
+        avp->tag = vp->tag;
+    }
+
+	DEBUG("ZMQ serialize attr: %s", vp->da->name);
+
     return avp;
 }
 
-
-FRPacket pack_freeradius_packet(TALLOC_CTX *ctx, RADIUS_PACKET *packet) {
-    FRPacket pkt = FR__PACKET__INIT;
-    pkt.code = packet->code;
-    pkt.id = packet->id;
+int pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, FRAVP ***avps) {
+    int vps_count = count_vps(vps);
+    *avps = talloc_array(ctx, FRAVP*, vps_count);
 
     vp_cursor_t cursor;
     VALUE_PAIR *vp;
-    FRAVP avp;
+    int i = 0;
+
+	for (vp = fr_cursor_init(&cursor, vps);
+         vp;
+         vp = fr_cursor_next(&cursor)) {
+        *avps[i++] = pack_freeradius_valuepair(ctx, vp);
+    }
+
+    return vps_count;
+}
+
+FRPacket *pack_freeradius_packet(TALLOC_CTX *ctx, const RADIUS_PACKET *packet) {
+    FRPacket *pkt = talloc_zero(ctx, FRPacket);
+    fr__packet__init(pkt);
+
+    pkt->code = packet->code;
+    pkt->id = packet->id;
+
+    pkt->n_attrs = pack_freeradius_valuepairs(pkt, packet->vps, &pkt->attrs);
+
+    /*
+    int vps_count = count_vps(&packet->vps);
+    pkt->vps_n = vps_count;
+    pkt->vps = talloc_array_zero(pkt, *FRAVP, vps_count);
+
+    vp_cursor_t cursor;
+    VALUE_PAIR *vp;
+    int i = 0;
 
 	for (vp = fr_cursor_init(&cursor, &packet->vps);
          vp;
          vp = fr_cursor_next(&cursor)) {
-        avp = pack_freeradius_valuepair(ctx, vp);
+        pkt->vps[i++] = pack_freeradius_valuepair(pkt, vp);
     }
-
+    */
     return pkt;
 }
 
-FRRequest pack_freeradius_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request) {
-    FRRequest req = FR__REQUEST__INIT;
+FRRequest *pack_freeradius_request(TALLOC_CTX *ctx, const REQUEST *request) {
+    FRRequest *req = talloc_zero(ctx, FRRequest);
+    fr__request__init(req);
+
+    req->packet = pack_freeradius_packet(req, request->packet);
+    req->reply = pack_freeradius_packet(req, request->reply);
+
+    req->n_config_items = pack_freeradius_valuepairs(req, request->config_items, &req->config_items);
+    req->n_state = pack_freeradius_valuepairs(req, request->state, &req->state);
 
     return req;
 }
 
-ModState pack_mod_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request, UNUSED rlm_zmq_t *inst, UNUSED rlm_components_t comp) {
-    ModState state = MOD__STATE__INIT;
+ModState *pack_mod_request(TALLOC_CTX *ctx, const REQUEST *request, UNUSED const rlm_zmq_t *inst, rlm_components_t comp) {
+    ModState *mod = talloc_zero(ctx, ModState);
+    mod__state__init(mod);
 
-    return state;
+    mod->component = (RLMCOMPONENT)comp;
+    mod->request = pack_freeradius_request(mod, request);
+
+    return mod;
 }
+/*
+void *serialize_mod_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request, UNUSED rlm_zmq_t *inst, UNUSED rlm_components_t comp)
+*/
