@@ -17,4 +17,6 @@ FRPacket *pack_freeradius_packet(TALLOC_CTX *ctx, const RADIUS_PACKET *packet);
 FRRequest *pack_freeradius_request(TALLOC_CTX *ctx, const REQUEST *request);
 ModState *pack_mod_request(TALLOC_CTX *ctx, const REQUEST *request, const rlm_zmq_t *inst, rlm_components_t comp);
 
+void *serialize_mod_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp);
+
 #endif /*_ZMQ_SERIALIZE_H*/

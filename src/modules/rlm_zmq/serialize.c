@@ -32,15 +32,6 @@ RCSID("$Id$")
 #include "serialize.h"
 
 // MACROS SERIALIZE(prefix)
-/*
-size_t buf_len = fr__packet__get_packed_size (&pkt);
-*len = buf_len;
-
-void *buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
-fr__packet__pack (&pkt, buf);
-
-return buf;
-*/
 
 /*
 // копипаста потенциально полезного кода
@@ -50,12 +41,15 @@ FR_TOKEN getop(char const **ptr)
 #define TALLOC_PROTOBUF(ctx, type) talloc_zero(ctx, type)
 
 static int count_vps(const VALUE_PAIR *vps) {
+    if (!vps) return 0;
+
     int count = 0;
     vp_cursor_t cursor;
 
-    fr_cursor_init(&cursor, vps);
+    VALUE_PAIR *vp = fr_cursor_init(&cursor, &vps);
 
-    while (fr_cursor_next(&cursor)) {
+    while (vp) {
+        vp = fr_cursor_next(&cursor);
         count++;
     }
 
@@ -64,87 +58,126 @@ static int count_vps(const VALUE_PAIR *vps) {
 
 FRAVP *pack_freeradius_valuepair(TALLOC_CTX *ctx, const VALUE_PAIR *vp) {
     FRAVP *avp = talloc_zero(ctx, FRAVP);
+    if (!avp) goto error;
     fr__avp__init(avp);
 
     avp->attr = vp->da->attr;
     avp->vendor = vp->da->vendor;
     avp->value = vp_aprints_value(ctx, vp, '\0');
-    avp->op = fr_token_name(vp->op);
+    avp->op = (char *)fr_token_name(vp->op);
     if (vp->da->flags.has_tag) {
         avp->tag = vp->tag;
     }
 
-	DEBUG("ZMQ serialize attr: %s", vp->da->name);
-
     return avp;
+
+error:
+    TALLOC_FREE(avp);
+    return NULL;
 }
 
-int pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, FRAVP ***avps) {
+int pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, FRAVP ***out_avps) {
     int vps_count = count_vps(vps);
-    *avps = talloc_array(ctx, FRAVP*, vps_count);
+    if (!vps_count) return 0;
 
     vp_cursor_t cursor;
     VALUE_PAIR *vp;
     int i = 0;
 
-	for (vp = fr_cursor_init(&cursor, vps);
+    FRAVP **avps = talloc_array(ctx, FRAVP*, vps_count);
+    if (!avps) goto error;
+
+	for (vp = fr_cursor_init(&cursor, &vps);
          vp;
          vp = fr_cursor_next(&cursor)) {
-        *avps[i++] = pack_freeradius_valuepair(ctx, vp);
+        FRAVP *avp = pack_freeradius_valuepair(ctx, vp);
+        if (!avp) goto error;
+        avps[i++] = avp;
     }
 
+    *out_avps = avps;
     return vps_count;
+
+error:
+    for(int j = 0; j < i; j++) TALLOC_FREE(avps[j]);
+    TALLOC_FREE(avps);
+    return -1;
 }
 
 FRPacket *pack_freeradius_packet(TALLOC_CTX *ctx, const RADIUS_PACKET *packet) {
     FRPacket *pkt = talloc_zero(ctx, FRPacket);
+    if (!pkt) goto error;
     fr__packet__init(pkt);
 
     pkt->code = packet->code;
     pkt->id = packet->id;
 
-    pkt->n_attrs = pack_freeradius_valuepairs(pkt, packet->vps, &pkt->attrs);
+    int attr_count = pack_freeradius_valuepairs(pkt, packet->vps, &pkt->attrs);
+    if (attr_count == -1) goto error;
+    pkt->n_attrs = attr_count;
 
-    /*
-    int vps_count = count_vps(&packet->vps);
-    pkt->vps_n = vps_count;
-    pkt->vps = talloc_array_zero(pkt, *FRAVP, vps_count);
-
-    vp_cursor_t cursor;
-    VALUE_PAIR *vp;
-    int i = 0;
-
-	for (vp = fr_cursor_init(&cursor, &packet->vps);
-         vp;
-         vp = fr_cursor_next(&cursor)) {
-        pkt->vps[i++] = pack_freeradius_valuepair(pkt, vp);
-    }
-    */
     return pkt;
+
+error:
+    TALLOC_FREE(pkt);
+    return NULL;
 }
 
 FRRequest *pack_freeradius_request(TALLOC_CTX *ctx, const REQUEST *request) {
     FRRequest *req = talloc_zero(ctx, FRRequest);
+    if (!req) goto error;
     fr__request__init(req);
 
+    int attr_count;
     req->packet = pack_freeradius_packet(req, request->packet);
+    if (!req->packet) goto error;
     req->reply = pack_freeradius_packet(req, request->reply);
+    if (!req->reply) goto error;
 
-    req->n_config_items = pack_freeradius_valuepairs(req, request->config_items, &req->config_items);
-    req->n_state = pack_freeradius_valuepairs(req, request->state, &req->state);
+    attr_count = pack_freeradius_valuepairs(req, request->config_items, &req->config_items);
+    if (attr_count == -1) goto error;
+    req->n_config_items = attr_count;
+
+    attr_count = pack_freeradius_valuepairs(req, request->state, &req->state);
+    if (attr_count == -1) goto error;
+    req->n_state = attr_count;
 
     return req;
+
+error:
+    TALLOC_FREE(req);
+    return NULL;
 }
 
 ModState *pack_mod_request(TALLOC_CTX *ctx, const REQUEST *request, UNUSED const rlm_zmq_t *inst, rlm_components_t comp) {
     ModState *mod = talloc_zero(ctx, ModState);
+    if (!mod) goto error;
     mod__state__init(mod);
 
     mod->component = (RLMCOMPONENT)comp;
     mod->request = pack_freeradius_request(mod, request);
+    if (!mod->request) goto error;
 
     return mod;
+
+error:
+    TALLOC_FREE(mod);
+    return NULL;
 }
-/*
-void *serialize_mod_request(UNUSED TALLOC_CTX *ctx, UNUSED REQUEST *request, UNUSED rlm_zmq_t *inst, UNUSED rlm_components_t comp)
-*/
+
+void *serialize_mod_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp) {
+    void *buf = NULL;
+    ModState *mod = pack_mod_request(ctx, request, inst, comp);
+    if (!mod) goto release;
+
+    size_t buf_len = mod__state__get_packed_size(mod);
+
+    buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
+    if (!buf) goto release;
+    mod__state__pack(mod, buf);
+    *len = buf_len;
+
+release:
+    TALLOC_FREE(mod);
+    return buf;
+}
