@@ -13,10 +13,9 @@ RCSIDH(zmq_serialize_h, "$Id$")
 
 FRAVP *pack_freeradius_valuepair(TALLOC_CTX *ctx, const VALUE_PAIR *vp);
 int pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, FRAVP ***avps);
-FRPacket *pack_freeradius_packet(TALLOC_CTX *ctx, const RADIUS_PACKET *packet);
-FRRequest *pack_freeradius_request(TALLOC_CTX *ctx, const REQUEST *request);
-ModState *pack_mod_request(TALLOC_CTX *ctx, const REQUEST *request, const rlm_zmq_t *inst, rlm_components_t comp);
+int pack_list(TALLOC_CTX *ctx, REQUEST *request, pair_lists_t list, FRAVP ***out_avps);
+Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, const rlm_zmq_t *inst, rlm_components_t comp);
 
-void *serialize_mod_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp);
+void *serialize_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp);
 
 #endif /*_ZMQ_SERIALIZE_H*/

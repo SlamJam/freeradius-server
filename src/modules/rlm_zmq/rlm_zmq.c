@@ -52,18 +52,18 @@ static const CONF_PARSER module_config[] = {
 static int mod_instantiate(CONF_SECTION *conf, void *instance)
 {
 	rlm_zmq_t *inst = instance;
-	char const *xlat_name;
+	char const *name;
 
-	xlat_name = cf_section_name2(conf);
-	if (!xlat_name) {
-		xlat_name = cf_section_name1(conf);
+	name = cf_section_name2(conf);
+	if (!name) {
+		name = cf_section_name1(conf);
 	}
 
-	inst->xlat_name = xlat_name;
+	inst->name = name;
 	inst->cs = conf;
 
-	inst->zmq_context = zmq_ctx_new();
-	if (!inst->zmq_context) return -1;
+	inst->zctx = zmq_ctx_new();
+	if (!inst->zctx) return -1;
 
 	inst->pool = fr_connection_pool_module_init(inst->cs, inst, mod_conn_create, NULL, NULL);
 	if (!inst->pool) return -1;
@@ -84,6 +84,7 @@ static int mod_detach(UNUSED void *instance)
 	rlm_zmq_t *inst = instance;
 
 	if (inst->pool) fr_connection_pool_delete(inst->pool);
+	if (inst->zctx) zmq_ctx_destroy(inst->zctx);
 
 	/*
 	 *  We need to explicitly free all children, so if the driver
@@ -111,7 +112,7 @@ static rlm_rcode_t CC_HINT(nonnull) mod_authorize(void *instance, REQUEST *reque
 /*
  *	Authenticate the user with the given password.
  */
-static rlm_rcode_t CC_HINT(nonnull) mod_authenticate(UNUSED void *instance, UNUSED REQUEST *request)
+static rlm_rcode_t CC_HINT(nonnull) mod_authenticate(void *instance, REQUEST *request)
 {
 	return zmq_mod_call(instance, request, RLM_COMPONENT_AUTH);
 }
@@ -119,7 +120,7 @@ static rlm_rcode_t CC_HINT(nonnull) mod_authenticate(UNUSED void *instance, UNUS
 /*
  *	Massage the request before recording it or proxying it
  */
-static rlm_rcode_t CC_HINT(nonnull) mod_preacct(UNUSED void *instance, UNUSED REQUEST *request)
+static rlm_rcode_t CC_HINT(nonnull) mod_preacct(void *instance, REQUEST *request)
 {
 	return zmq_mod_call(instance, request, RLM_COMPONENT_PREACCT);
 }
@@ -127,7 +128,7 @@ static rlm_rcode_t CC_HINT(nonnull) mod_preacct(UNUSED void *instance, UNUSED RE
 /*
  *	Write accounting information to this modules database.
  */
-static rlm_rcode_t CC_HINT(nonnull) mod_accounting(UNUSED void *instance, UNUSED REQUEST *request)
+static rlm_rcode_t CC_HINT(nonnull) mod_accounting(void *instance, REQUEST *request)
 {
 	return zmq_mod_call(instance, request, RLM_COMPONENT_ACCT);
 }
@@ -142,7 +143,7 @@ static rlm_rcode_t CC_HINT(nonnull) mod_accounting(UNUSED void *instance, UNUSED
  *	max. number of logins, do a second pass and validate all
  *	logins by querying the terminal server (using eg. SNMP).
  */
-static rlm_rcode_t CC_HINT(nonnull) mod_checksimul(UNUSED void *instance, UNUSED REQUEST *request)
+static rlm_rcode_t CC_HINT(nonnull) mod_checksimul(void *instance, REQUEST *request)
 {
 	return zmq_mod_call(instance, request, RLM_COMPONENT_SESS);
 }

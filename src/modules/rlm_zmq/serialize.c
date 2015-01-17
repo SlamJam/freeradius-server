@@ -104,43 +104,95 @@ error:
     return -1;
 }
 
-FRPacket *pack_freeradius_packet(TALLOC_CTX *ctx, const RADIUS_PACKET *packet) {
-    FRPacket *pkt = talloc_zero(ctx, FRPacket);
-    if (!pkt) goto error;
-    fr__packet__init(pkt);
+int pack_list(TALLOC_CTX *ctx, REQUEST *request, pair_lists_t list, FRAVP ***out_avps) {
+/*
+	da = dict_attrbyname(attribute);
+	if (!da) {
+		RWDEBUG("Attribute \"%s\" unknown, skipping", attribute);
 
-    pkt->code = packet->code;
-    pkt->id = packet->id;
+		curl_free(name);
 
-    int attr_count = pack_freeradius_valuepairs(pkt, packet->vps, &pkt->attrs);
-    if (attr_count == -1) goto error;
-    pkt->n_attrs = attr_count;
+		continue;
+	}
 
-    return pkt;
+	ctx = radius_list_ctx(reference, list);
 
-error:
-    TALLOC_FREE(pkt);
-    return NULL;
+	vp = pairalloc(ctx, da);
+	if (!vp) {
+		REDEBUG("Failed creating valuepair");
+		talloc_free(expanded);
+
+		goto error;
+	}
+
+	ret = pairparsevalue(vp, expanded, -1);
+	if (ret < 0) {
+		RWDEBUG("Incompatible value assignment, skipping");
+		talloc_free(vp);
+		goto skip;
+	}
+
+	pairadd(vps, vp);
+*/
+	VALUE_PAIR **vps = radius_list(request, list);
+	//rad_assert(vps);
+
+    if (!vps) return 0;
+
+    return pack_freeradius_valuepairs(ctx, *vps, out_avps);
 }
 
-FRRequest *pack_freeradius_request(TALLOC_CTX *ctx, const REQUEST *request) {
-    FRRequest *req = talloc_zero(ctx, FRRequest);
+Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, UNUSED const rlm_zmq_t *inst, rlm_components_t comp) {
+    Request *req = talloc_zero(ctx, Request);
     if (!req) goto error;
-    fr__request__init(req);
+    request__init(req);
 
     int attr_count;
-    req->packet = pack_freeradius_packet(req, request->packet);
-    if (!req->packet) goto error;
-    req->reply = pack_freeradius_packet(req, request->reply);
-    if (!req->reply) goto error;
 
-    attr_count = pack_freeradius_valuepairs(req, request->config_items, &req->config_items);
-    if (attr_count == -1) goto error;
-    req->n_config_items = attr_count;
+    req->component = (RLMCOMPONENT)comp;
 
-    attr_count = pack_freeradius_valuepairs(req, request->state, &req->state);
+    attr_count = pack_list(req, request, PAIR_LIST_REQUEST, &req->request);
     if (attr_count == -1) goto error;
-    req->n_state = attr_count;
+    req->n_request = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_REPLY, &req->reply);
+    if (attr_count == -1) goto error;
+    req->n_reply = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_CONTROL, &req->control);
+    if (attr_count == -1) goto error;
+    req->n_control = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_STATE, &req->session_state);
+    if (attr_count == -1) goto error;
+    req->n_session_state = attr_count;
+
+#ifdef WITH_PROXY
+    attr_count = pack_list(req, request, PAIR_LIST_PROXY_REQUEST, &req->proxy_request);
+    if (attr_count == -1) goto error;
+    req->n_proxy_request = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_PROXY_REPLY, &req->proxy_reply);
+    if (attr_count == -1) goto error;
+    req->n_proxy_reply = attr_count;
+#endif
+#ifdef WITH_COA
+    attr_count = pack_list(req, request, PAIR_LIST_COA, &req->coa);
+    if (attr_count == -1) goto error;
+    req->n_coa = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_COA_REPLY, &req->coa_reply);
+    if (attr_count == -1) goto error;
+    req->n_coa_reply = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_DM, &req->disconnect);
+    if (attr_count == -1) goto error;
+    req->n_disconnect = attr_count;
+
+    attr_count = pack_list(req, request, PAIR_LIST_DM_REPLY, &req->disconnect_reply);
+    if (attr_count == -1) goto error;
+    req->n_disconnect_reply = attr_count;
+#endif
 
     return req;
 
@@ -149,35 +201,19 @@ error:
     return NULL;
 }
 
-ModState *pack_mod_request(TALLOC_CTX *ctx, const REQUEST *request, UNUSED const rlm_zmq_t *inst, rlm_components_t comp) {
-    ModState *mod = talloc_zero(ctx, ModState);
-    if (!mod) goto error;
-    mod__state__init(mod);
-
-    mod->component = (RLMCOMPONENT)comp;
-    mod->request = pack_freeradius_request(mod, request);
-    if (!mod->request) goto error;
-
-    return mod;
-
-error:
-    TALLOC_FREE(mod);
-    return NULL;
-}
-
-void *serialize_mod_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp) {
+void *serialize_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp) {
     void *buf = NULL;
-    ModState *mod = pack_mod_request(ctx, request, inst, comp);
-    if (!mod) goto release;
+    Request *req = pack_request(ctx, request, inst, comp);
+    if (!req) goto release;
 
-    size_t buf_len = mod__state__get_packed_size(mod);
+    size_t buf_len = request__get_packed_size(req);
 
     buf = talloc_zero_size(ctx, buf_len); // Allocate required serialized buffer length
     if (!buf) goto release;
-    mod__state__pack(mod, buf);
+    request__pack(req, buf);
     *len = buf_len;
 
 release:
-    TALLOC_FREE(mod);
+    TALLOC_FREE(req);
     return buf;
 }

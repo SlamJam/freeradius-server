@@ -61,7 +61,7 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 		goto error;
 	}
 
-    buf = serialize_mod_request(request, &buf_len, request, inst, comp);
+    buf = serialize_request(request, &buf_len, request, inst, comp);
 	if (!buf) goto error;
 
     int res = zmq_send(handle->sock, buf, buf_len, 0);
@@ -126,7 +126,7 @@ void *mod_conn_create(TALLOC_CTX *ctx, void *instance) {
 	 */
 	handle->inst = inst;
 
-    handle->sock = zmq_socket(inst->zmq_context, ZMQ_DEALER);
+    handle->sock = zmq_socket(inst->zctx, ZMQ_DEALER);
 
 	if (!handle->sock) {
 		exec_trigger(NULL, inst->cs, "modules.zmq.fail", true);

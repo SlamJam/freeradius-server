@@ -16,9 +16,8 @@ PROTOBUF_C__BEGIN_DECLS
 
 
 typedef struct _FRAVP FRAVP;
-typedef struct _FRPacket FRPacket;
-typedef struct _FRRequest FRRequest;
-typedef struct _ModState ModState;
+typedef struct _Request Request;
+typedef struct _Response Response;
 
 
 /* --- enums --- */
@@ -69,46 +68,64 @@ extern char fr__avp__op__default_value[];
     , 0, 0, NULL, fr__avp__op__default_value, 0,0 }
 
 
-struct  _FRPacket
-{
-  ProtobufCMessage base;
-  uint32_t code;
-  uint32_t id;
-  size_t n_attrs;
-  FRAVP **attrs;
-};
-#define FR__PACKET__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&fr__packet__descriptor) \
-    , 0, 0, 0,NULL }
-
-
-struct  _FRRequest
-{
-  ProtobufCMessage base;
-  FRPacket *packet;
-  FRPacket *reply;
-  size_t n_config_items;
-  FRAVP **config_items;
-  size_t n_state;
-  FRAVP **state;
-};
-#define FR__REQUEST__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&fr__request__descriptor) \
-    , NULL, NULL, 0,NULL, 0,NULL }
-
-
-struct  _ModState
+struct  _Request
 {
   ProtobufCMessage base;
   RLMCOMPONENT component;
-  FRRequest *request;
-  RLMRCODE rcode;
-  protobuf_c_boolean has_prev_rcode;
-  RLMRCODE prev_rcode;
+  size_t n_request;
+  FRAVP **request;
+  size_t n_reply;
+  FRAVP **reply;
+  size_t n_control;
+  FRAVP **control;
+  size_t n_session_state;
+  FRAVP **session_state;
+  size_t n_proxy_request;
+  FRAVP **proxy_request;
+  size_t n_proxy_reply;
+  FRAVP **proxy_reply;
+  size_t n_coa;
+  FRAVP **coa;
+  size_t n_coa_reply;
+  FRAVP **coa_reply;
+  size_t n_disconnect;
+  FRAVP **disconnect;
+  size_t n_disconnect_reply;
+  FRAVP **disconnect_reply;
 };
-#define MOD__STATE__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mod__state__descriptor) \
-    , 0, NULL, RLM__RCODE__NOOP, 0,0 }
+#define REQUEST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&request__descriptor) \
+    , 0, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
+
+
+struct  _Response
+{
+  ProtobufCMessage base;
+  RLMRCODE rcode;
+  size_t n_request;
+  FRAVP **request;
+  size_t n_reply;
+  FRAVP **reply;
+  size_t n_control;
+  FRAVP **control;
+  size_t n_session_state;
+  FRAVP **session_state;
+  size_t n_proxy_request;
+  FRAVP **proxy_request;
+  size_t n_proxy_reply;
+  FRAVP **proxy_reply;
+  size_t n_coa;
+  FRAVP **coa;
+  size_t n_coa_reply;
+  FRAVP **coa_reply;
+  size_t n_disconnect;
+  FRAVP **disconnect;
+  size_t n_disconnect_reply;
+  FRAVP **disconnect_reply;
+};
+#define RESPONSE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&response__descriptor) \
+    , RLM__RCODE__NOOP, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
 
 
 /* FRAVP methods */
@@ -130,76 +147,54 @@ FRAVP *
 void   fr__avp__free_unpacked
                      (FRAVP *message,
                       ProtobufCAllocator *allocator);
-/* FRPacket methods */
-void   fr__packet__init
-                     (FRPacket         *message);
-size_t fr__packet__get_packed_size
-                     (const FRPacket   *message);
-size_t fr__packet__pack
-                     (const FRPacket   *message,
+/* Request methods */
+void   request__init
+                     (Request         *message);
+size_t request__get_packed_size
+                     (const Request   *message);
+size_t request__pack
+                     (const Request   *message,
                       uint8_t             *out);
-size_t fr__packet__pack_to_buffer
-                     (const FRPacket   *message,
+size_t request__pack_to_buffer
+                     (const Request   *message,
                       ProtobufCBuffer     *buffer);
-FRPacket *
-       fr__packet__unpack
+Request *
+       request__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   fr__packet__free_unpacked
-                     (FRPacket *message,
+void   request__free_unpacked
+                     (Request *message,
                       ProtobufCAllocator *allocator);
-/* FRRequest methods */
-void   fr__request__init
-                     (FRRequest         *message);
-size_t fr__request__get_packed_size
-                     (const FRRequest   *message);
-size_t fr__request__pack
-                     (const FRRequest   *message,
+/* Response methods */
+void   response__init
+                     (Response         *message);
+size_t response__get_packed_size
+                     (const Response   *message);
+size_t response__pack
+                     (const Response   *message,
                       uint8_t             *out);
-size_t fr__request__pack_to_buffer
-                     (const FRRequest   *message,
+size_t response__pack_to_buffer
+                     (const Response   *message,
                       ProtobufCBuffer     *buffer);
-FRRequest *
-       fr__request__unpack
+Response *
+       response__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   fr__request__free_unpacked
-                     (FRRequest *message,
-                      ProtobufCAllocator *allocator);
-/* ModState methods */
-void   mod__state__init
-                     (ModState         *message);
-size_t mod__state__get_packed_size
-                     (const ModState   *message);
-size_t mod__state__pack
-                     (const ModState   *message,
-                      uint8_t             *out);
-size_t mod__state__pack_to_buffer
-                     (const ModState   *message,
-                      ProtobufCBuffer     *buffer);
-ModState *
-       mod__state__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data);
-void   mod__state__free_unpacked
-                     (ModState *message,
+void   response__free_unpacked
+                     (Response *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*FRAVP_Closure)
                  (const FRAVP *message,
                   void *closure_data);
-typedef void (*FRPacket_Closure)
-                 (const FRPacket *message,
+typedef void (*Request_Closure)
+                 (const Request *message,
                   void *closure_data);
-typedef void (*FRRequest_Closure)
-                 (const FRRequest *message,
-                  void *closure_data);
-typedef void (*ModState_Closure)
-                 (const ModState *message,
+typedef void (*Response_Closure)
+                 (const Response *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -210,9 +205,8 @@ typedef void (*ModState_Closure)
 extern const ProtobufCEnumDescriptor    rlm__rcode__descriptor;
 extern const ProtobufCEnumDescriptor    rlm__component__descriptor;
 extern const ProtobufCMessageDescriptor fr__avp__descriptor;
-extern const ProtobufCMessageDescriptor fr__packet__descriptor;
-extern const ProtobufCMessageDescriptor fr__request__descriptor;
-extern const ProtobufCMessageDescriptor mod__state__descriptor;
+extern const ProtobufCMessageDescriptor request__descriptor;
+extern const ProtobufCMessageDescriptor response__descriptor;
 
 PROTOBUF_C__END_DECLS
 

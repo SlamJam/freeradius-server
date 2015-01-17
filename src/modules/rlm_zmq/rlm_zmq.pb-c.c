@@ -50,133 +50,90 @@ void   fr__avp__free_unpacked
   assert(message->base.descriptor == &fr__avp__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   fr__packet__init
-                     (FRPacket         *message)
+void   request__init
+                     (Request         *message)
 {
-  static FRPacket init_value = FR__PACKET__INIT;
+  static Request init_value = REQUEST__INIT;
   *message = init_value;
 }
-size_t fr__packet__get_packed_size
-                     (const FRPacket *message)
+size_t request__get_packed_size
+                     (const Request *message)
 {
-  assert(message->base.descriptor == &fr__packet__descriptor);
+  assert(message->base.descriptor == &request__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t fr__packet__pack
-                     (const FRPacket *message,
+size_t request__pack
+                     (const Request *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &fr__packet__descriptor);
+  assert(message->base.descriptor == &request__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t fr__packet__pack_to_buffer
-                     (const FRPacket *message,
+size_t request__pack_to_buffer
+                     (const Request *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &fr__packet__descriptor);
+  assert(message->base.descriptor == &request__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-FRPacket *
-       fr__packet__unpack
+Request *
+       request__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (FRPacket *)
-     protobuf_c_message_unpack (&fr__packet__descriptor,
+  return (Request *)
+     protobuf_c_message_unpack (&request__descriptor,
                                 allocator, len, data);
 }
-void   fr__packet__free_unpacked
-                     (FRPacket *message,
+void   request__free_unpacked
+                     (Request *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &fr__packet__descriptor);
+  assert(message->base.descriptor == &request__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   fr__request__init
-                     (FRRequest         *message)
+void   response__init
+                     (Response         *message)
 {
-  static FRRequest init_value = FR__REQUEST__INIT;
+  static Response init_value = RESPONSE__INIT;
   *message = init_value;
 }
-size_t fr__request__get_packed_size
-                     (const FRRequest *message)
+size_t response__get_packed_size
+                     (const Response *message)
 {
-  assert(message->base.descriptor == &fr__request__descriptor);
+  assert(message->base.descriptor == &response__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t fr__request__pack
-                     (const FRRequest *message,
+size_t response__pack
+                     (const Response *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &fr__request__descriptor);
+  assert(message->base.descriptor == &response__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t fr__request__pack_to_buffer
-                     (const FRRequest *message,
+size_t response__pack_to_buffer
+                     (const Response *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &fr__request__descriptor);
+  assert(message->base.descriptor == &response__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-FRRequest *
-       fr__request__unpack
+Response *
+       response__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (FRRequest *)
-     protobuf_c_message_unpack (&fr__request__descriptor,
+  return (Response *)
+     protobuf_c_message_unpack (&response__descriptor,
                                 allocator, len, data);
 }
-void   fr__request__free_unpacked
-                     (FRRequest *message,
+void   response__free_unpacked
+                     (Response *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &fr__request__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
-void   mod__state__init
-                     (ModState         *message)
-{
-  static ModState init_value = MOD__STATE__INIT;
-  *message = init_value;
-}
-size_t mod__state__get_packed_size
-                     (const ModState *message)
-{
-  assert(message->base.descriptor == &mod__state__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t mod__state__pack
-                     (const ModState *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &mod__state__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t mod__state__pack_to_buffer
-                     (const ModState *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &mod__state__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-ModState *
-       mod__state__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (ModState *)
-     protobuf_c_message_unpack (&mod__state__descriptor,
-                                allocator, len, data);
-}
-void   mod__state__free_unpacked
-                     (ModState *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &mod__state__descriptor);
+  assert(message->base.descriptor == &response__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 char fr__avp__op__default_value[] = ":=";
@@ -270,149 +227,7 @@ const ProtobufCMessageDescriptor fr__avp__descriptor =
   (ProtobufCMessageInit) fr__avp__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor fr__packet__field_descriptors[3] =
-{
-  {
-    "code",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(FRPacket, code),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "id",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(FRPacket, id),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "attrs",
-    3,
-    PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_MESSAGE,
-    offsetof(FRPacket, n_attrs),
-    offsetof(FRPacket, attrs),
-    &fr__avp__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned fr__packet__field_indices_by_name[] = {
-  2,   /* field[2] = attrs */
-  0,   /* field[0] = code */
-  1,   /* field[1] = id */
-};
-static const ProtobufCIntRange fr__packet__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 3 }
-};
-const ProtobufCMessageDescriptor fr__packet__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "FR_Packet",
-  "FRPacket",
-  "FRPacket",
-  "",
-  sizeof(FRPacket),
-  3,
-  fr__packet__field_descriptors,
-  fr__packet__field_indices_by_name,
-  1,  fr__packet__number_ranges,
-  (ProtobufCMessageInit) fr__packet__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor fr__request__field_descriptors[4] =
-{
-  {
-    "packet",
-    1,
-    PROTOBUF_C_LABEL_OPTIONAL,
-    PROTOBUF_C_TYPE_MESSAGE,
-    0,   /* quantifier_offset */
-    offsetof(FRRequest, packet),
-    &fr__packet__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "reply",
-    2,
-    PROTOBUF_C_LABEL_OPTIONAL,
-    PROTOBUF_C_TYPE_MESSAGE,
-    0,   /* quantifier_offset */
-    offsetof(FRRequest, reply),
-    &fr__packet__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "config_items",
-    3,
-    PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_MESSAGE,
-    offsetof(FRRequest, n_config_items),
-    offsetof(FRRequest, config_items),
-    &fr__avp__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "state",
-    4,
-    PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_MESSAGE,
-    offsetof(FRRequest, n_state),
-    offsetof(FRRequest, state),
-    &fr__avp__descriptor,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned fr__request__field_indices_by_name[] = {
-  2,   /* field[2] = config_items */
-  0,   /* field[0] = packet */
-  1,   /* field[1] = reply */
-  3,   /* field[3] = state */
-};
-static const ProtobufCIntRange fr__request__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 4 }
-};
-const ProtobufCMessageDescriptor fr__request__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "FR_Request",
-  "FRRequest",
-  "FRRequest",
-  "",
-  sizeof(FRRequest),
-  4,
-  fr__request__field_descriptors,
-  fr__request__field_indices_by_name,
-  1,  fr__request__number_ranges,
-  (ProtobufCMessageInit) fr__request__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const RLMRCODE mod__state__rcode__default_value = RLM__RCODE__NOOP;
-static const ProtobufCFieldDescriptor mod__state__field_descriptors[4] =
+static const ProtobufCFieldDescriptor request__field_descriptors[11] =
 {
   {
     "component",
@@ -420,7 +235,7 @@ static const ProtobufCFieldDescriptor mod__state__field_descriptors[4] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_ENUM,
     0,   /* quantifier_offset */
-    offsetof(ModState, component),
+    offsetof(Request, component),
     &rlm__component__descriptor,
     NULL,
     0,             /* flags */
@@ -429,64 +244,324 @@ static const ProtobufCFieldDescriptor mod__state__field_descriptors[4] =
   {
     "request",
     2,
-    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_LABEL_REPEATED,
     PROTOBUF_C_TYPE_MESSAGE,
-    0,   /* quantifier_offset */
-    offsetof(ModState, request),
-    &fr__request__descriptor,
+    offsetof(Request, n_request),
+    offsetof(Request, request),
+    &fr__avp__descriptor,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "prev_rcode",
+    "reply",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
-    PROTOBUF_C_TYPE_ENUM,
-    offsetof(ModState, has_prev_rcode),
-    offsetof(ModState, prev_rcode),
-    &rlm__rcode__descriptor,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_reply),
+    offsetof(Request, reply),
+    &fr__avp__descriptor,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "rcode",
+    "control",
     4,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_ENUM,
-    0,   /* quantifier_offset */
-    offsetof(ModState, rcode),
-    &rlm__rcode__descriptor,
-    &mod__state__rcode__default_value,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_control),
+    offsetof(Request, control),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "session_state",
+    5,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_session_state),
+    offsetof(Request, session_state),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "proxy_request",
+    6,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_proxy_request),
+    offsetof(Request, proxy_request),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "proxy_reply",
+    7,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_proxy_reply),
+    offsetof(Request, proxy_reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "coa",
+    8,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_coa),
+    offsetof(Request, coa),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "coa_reply",
+    9,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_coa_reply),
+    offsetof(Request, coa_reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "disconnect",
+    10,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_disconnect),
+    offsetof(Request, disconnect),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "disconnect_reply",
+    11,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Request, n_disconnect_reply),
+    offsetof(Request, disconnect_reply),
+    &fr__avp__descriptor,
+    NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mod__state__field_indices_by_name[] = {
+static const unsigned request__field_indices_by_name[] = {
+  7,   /* field[7] = coa */
+  8,   /* field[8] = coa_reply */
   0,   /* field[0] = component */
-  2,   /* field[2] = prev_rcode */
-  3,   /* field[3] = rcode */
+  3,   /* field[3] = control */
+  9,   /* field[9] = disconnect */
+  10,   /* field[10] = disconnect_reply */
+  6,   /* field[6] = proxy_reply */
+  5,   /* field[5] = proxy_request */
+  2,   /* field[2] = reply */
   1,   /* field[1] = request */
+  4,   /* field[4] = session_state */
 };
-static const ProtobufCIntRange mod__state__number_ranges[1 + 1] =
+static const ProtobufCIntRange request__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 4 }
+  { 0, 11 }
 };
-const ProtobufCMessageDescriptor mod__state__descriptor =
+const ProtobufCMessageDescriptor request__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "Mod_State",
-  "ModState",
-  "ModState",
+  "Request",
+  "Request",
+  "Request",
   "",
-  sizeof(ModState),
-  4,
-  mod__state__field_descriptors,
-  mod__state__field_indices_by_name,
-  1,  mod__state__number_ranges,
-  (ProtobufCMessageInit) mod__state__init,
+  sizeof(Request),
+  11,
+  request__field_descriptors,
+  request__field_indices_by_name,
+  1,  request__number_ranges,
+  (ProtobufCMessageInit) request__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const RLMRCODE response__rcode__default_value = RLM__RCODE__NOOP;
+static const ProtobufCFieldDescriptor response__field_descriptors[11] =
+{
+  {
+    "rcode",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_ENUM,
+    0,   /* quantifier_offset */
+    offsetof(Response, rcode),
+    &rlm__rcode__descriptor,
+    &response__rcode__default_value,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "request",
+    2,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_request),
+    offsetof(Response, request),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reply",
+    3,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_reply),
+    offsetof(Response, reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "control",
+    4,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_control),
+    offsetof(Response, control),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "session_state",
+    5,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_session_state),
+    offsetof(Response, session_state),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "proxy_request",
+    6,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_proxy_request),
+    offsetof(Response, proxy_request),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "proxy_reply",
+    7,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_proxy_reply),
+    offsetof(Response, proxy_reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "coa",
+    8,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_coa),
+    offsetof(Response, coa),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "coa_reply",
+    9,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_coa_reply),
+    offsetof(Response, coa_reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "disconnect",
+    10,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_disconnect),
+    offsetof(Response, disconnect),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "disconnect_reply",
+    11,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Response, n_disconnect_reply),
+    offsetof(Response, disconnect_reply),
+    &fr__avp__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned response__field_indices_by_name[] = {
+  7,   /* field[7] = coa */
+  8,   /* field[8] = coa_reply */
+  3,   /* field[3] = control */
+  9,   /* field[9] = disconnect */
+  10,   /* field[10] = disconnect_reply */
+  6,   /* field[6] = proxy_reply */
+  5,   /* field[5] = proxy_request */
+  0,   /* field[0] = rcode */
+  2,   /* field[2] = reply */
+  1,   /* field[1] = request */
+  4,   /* field[4] = session_state */
+};
+static const ProtobufCIntRange response__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 11 }
+};
+const ProtobufCMessageDescriptor response__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "Response",
+  "Response",
+  "Response",
+  "",
+  sizeof(Response),
+  11,
+  response__field_descriptors,
+  response__field_indices_by_name,
+  1,  response__number_ranges,
+  (ProtobufCMessageInit) response__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =
