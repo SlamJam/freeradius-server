@@ -24,6 +24,7 @@ typedef struct rlm_zmq_t {
 	CONF_SECTION			*cs;
 	void 					*zmq_context;
 	char const				*connect_uri;	// URI we attempt to connect to
+	int						timeout;
 	fr_connection_pool_t	*pool;
 } rlm_zmq_t;
 

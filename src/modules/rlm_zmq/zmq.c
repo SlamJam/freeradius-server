@@ -62,12 +62,29 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 	}
 
     buf = serialize_mod_request(request, &buf_len, request, inst, comp);
+	if (!buf) goto error;
 
     int res = zmq_send(handle->sock, buf, buf_len, 0);
     if (res == -1) goto error;
 
     // receive
+	/*
+	zmq_pollitem_t items [1];
+	items[0].socket = socket;
+	items[0].events = ZMQ_POLLIN;
+	int rc = zmq_poll (items, 1, inst->timeout);
+	if (rc == 0) goto error; // timeout
 
+	// Create an empty ØMQ message
+	zmq_msg_t msg;
+	int rc = zmq_msg_init (&msg);
+	assert (rc == 0);
+	// Block until a message is available to be received from socket
+	rc = zmq_msg_recv (&msg, handle->sock, 0);
+	assert (rc != -1);
+	// Release message
+	zmq_msg_close (&msg);
+	*/
     // deserialize
 
 release:
@@ -87,6 +104,8 @@ static int _mod_conn_free(rlm_zmq_handle_t *conn) {
 
 	exec_trigger(NULL, inst->cs, "modules.zmq.close", false);
 
+	if (conn->sock) zmq_close(conn->sock);
+
 	return 0;
 }
 
@@ -99,13 +118,21 @@ void *mod_conn_create(TALLOC_CTX *ctx, void *instance) {
 	 *	pool contexts due to threading issues.
 	 */
 	handle = talloc_zero(ctx, rlm_zmq_handle_t);
-	if (!handle) return NULL;
+	if (!handle) goto error;
 
 	/*
 	 *	Handle requires a pointer to the SQL inst so the
 	 *	destructor has access to the module configuration.
 	 */
 	handle->inst = inst;
+
+    handle->sock = zmq_socket(inst->zmq_context, ZMQ_DEALER);
+
+	if (!handle->sock) {
+		exec_trigger(NULL, inst->cs, "modules.zmq.fail", true);
+
+		goto error;
+	}
 
 	/*
 	 *	When something frees this handle the destructor set by
@@ -115,20 +142,16 @@ void *mod_conn_create(TALLOC_CTX *ctx, void *instance) {
 	 */
 	talloc_set_destructor(handle, _mod_conn_free);
 
-    handle->sock = zmq_socket(inst->zmq_context, ZMQ_DEALER);
-
-	if (!handle->sock) {
-		exec_trigger(NULL, inst->cs, "modules.zmq.fail", true);
-
-		/*
-		 *	Destroy any half opened connections.
-		 */
-		talloc_free(handle);
-		return NULL;
-	}
-
-    zmq_connect(handle->sock, inst->connect_uri);
+    int rc = zmq_connect(handle->sock, inst->connect_uri);
+	if (rc == -1) goto error;
 
 	exec_trigger(NULL, inst->cs, "modules.zmq.open", false);
 	return handle;
+
+error:
+	/*
+	 *	Destroy any half opened connections.
+	 */
+	TALLOC_FREE(handle);
+	return NULL;
 }

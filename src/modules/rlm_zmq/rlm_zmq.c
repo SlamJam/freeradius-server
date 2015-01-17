@@ -35,6 +35,7 @@ RCSID("$Id$")
  */
 static const CONF_PARSER module_config[] = {
 	{ "connect_uri", FR_CONF_OFFSET(PW_TYPE_STRING, rlm_zmq_t, connect_uri), NULL },
+	{ "timeout", FR_CONF_OFFSET(PW_TYPE_SIGNED, rlm_zmq_t, timeout), "3000" },
 	{ NULL, -1, 0, NULL, NULL }		/* end the list */
 };
 
