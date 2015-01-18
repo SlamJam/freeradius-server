@@ -61,7 +61,7 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 		goto error;
 	}
 
-    buf = serialize_request(request, &buf_len, request, inst, comp);
+    buf = serialize_request(request, request, inst, comp, &buf_len);
 	if (!buf) goto error;
 
     int res = zmq_send(handle->sock, buf, buf_len, 0);

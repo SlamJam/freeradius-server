@@ -31,11 +31,41 @@ RCSID("$Id$")
 
 #include "serialize.h"
 
+#define PACK_LIST(req, request, PAIR_LIST, list) do { int count; req->list = pack_list(req, request, PAIR_LIST, &count); if (count == -1) goto error; req->n_##list = count; } while(0);
+
 // MACROS SERIALIZE(prefix)
 
 /*
 // копипаста потенциально полезного кода
-FR_TOKEN getop(char const **ptr)
+    FR_TOKEN getop(char const **ptr)
+
+	da = dict_attrbyname(attribute);
+	if (!da) {
+		RWDEBUG("Attribute \"%s\" unknown, skipping", attribute);
+
+		curl_free(name);
+
+		continue;
+	}
+
+	ctx = radius_list_ctx(reference, list);
+
+	vp = pairalloc(ctx, da);
+	if (!vp) {
+		REDEBUG("Failed creating valuepair");
+		talloc_free(expanded);
+
+		goto error;
+	}
+
+	ret = pairparsevalue(vp, expanded, -1);
+	if (ret < 0) {
+		RWDEBUG("Incompatible value assignment, skipping");
+		talloc_free(vp);
+		goto skip;
+	}
+
+	pairadd(vps, vp);
 */
 
 #define TALLOC_PROTOBUF(ctx, type) talloc_zero(ctx, type)
@@ -76,70 +106,44 @@ error:
     return NULL;
 }
 
-int pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, FRAVP ***out_avps) {
+FRAVP **pack_freeradius_valuepairs(TALLOC_CTX *ctx, const VALUE_PAIR *vps, int *p_count) {
     int vps_count = count_vps(vps);
-    if (!vps_count) return 0;
+    FRAVP **avps = NULL;
+    if (!vps_count) goto release;
 
     vp_cursor_t cursor;
     VALUE_PAIR *vp;
     int i = 0;
 
-    FRAVP **avps = talloc_array(ctx, FRAVP*, vps_count);
+    avps = talloc_array(ctx, FRAVP*, vps_count);
     if (!avps) goto error;
 
 	for (vp = fr_cursor_init(&cursor, &vps);
          vp;
          vp = fr_cursor_next(&cursor)) {
-        FRAVP *avp = pack_freeradius_valuepair(ctx, vp);
+        FRAVP *avp = pack_freeradius_valuepair(avps, vp);
         if (!avp) goto error;
         avps[i++] = avp;
     }
 
-    *out_avps = avps;
-    return vps_count;
+release:
+    *p_count = vps_count;
+    return avps;
 
 error:
-    for(int j = 0; j < i; j++) TALLOC_FREE(avps[j]);
     TALLOC_FREE(avps);
-    return -1;
+    *p_count = -1;
+    return NULL;
 }
 
-int pack_list(TALLOC_CTX *ctx, REQUEST *request, pair_lists_t list, FRAVP ***out_avps) {
-/*
-	da = dict_attrbyname(attribute);
-	if (!da) {
-		RWDEBUG("Attribute \"%s\" unknown, skipping", attribute);
-
-		curl_free(name);
-
-		continue;
-	}
-
-	ctx = radius_list_ctx(reference, list);
-
-	vp = pairalloc(ctx, da);
-	if (!vp) {
-		REDEBUG("Failed creating valuepair");
-		talloc_free(expanded);
-
-		goto error;
-	}
-
-	ret = pairparsevalue(vp, expanded, -1);
-	if (ret < 0) {
-		RWDEBUG("Incompatible value assignment, skipping");
-		talloc_free(vp);
-		goto skip;
-	}
-
-	pairadd(vps, vp);
-*/
-	VALUE_PAIR **vps = radius_list(request, list);
+FRAVP **pack_list(TALLOC_CTX *ctx, REQUEST *request, pair_lists_t list, int *p_count) {
+	VALUE_PAIR **p_vps = radius_list(request, list);
+    VALUE_PAIR *vps = NULL;
 	//rad_assert(vps);
 
-    if (!vps) return 0;
+    if (p_vps) vps = *p_vps;
 
-    return pack_freeradius_valuepairs(ctx, *vps, out_avps);
+    return pack_freeradius_valuepairs(ctx, vps, p_count);
 }
 
 Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, UNUSED const rlm_zmq_t *inst, rlm_components_t comp) {
@@ -147,51 +151,21 @@ Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, UNUSED const rlm_zmq_t 
     if (!req) goto error;
     request__init(req);
 
-    int attr_count;
-
     req->component = (RLMCOMPONENT)comp;
 
-    attr_count = pack_list(req, request, PAIR_LIST_REQUEST, &req->request);
-    if (attr_count == -1) goto error;
-    req->n_request = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_REPLY, &req->reply);
-    if (attr_count == -1) goto error;
-    req->n_reply = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_CONTROL, &req->control);
-    if (attr_count == -1) goto error;
-    req->n_control = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_STATE, &req->session_state);
-    if (attr_count == -1) goto error;
-    req->n_session_state = attr_count;
-
+    PACK_LIST(req, request, PAIR_LIST_REQUEST, request);
+    PACK_LIST(req, request, PAIR_LIST_REPLY, reply);
+    PACK_LIST(req, request, PAIR_LIST_CONTROL, control);
+    PACK_LIST(req, request, PAIR_LIST_STATE, session_state);
 #ifdef WITH_PROXY
-    attr_count = pack_list(req, request, PAIR_LIST_PROXY_REQUEST, &req->proxy_request);
-    if (attr_count == -1) goto error;
-    req->n_proxy_request = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_PROXY_REPLY, &req->proxy_reply);
-    if (attr_count == -1) goto error;
-    req->n_proxy_reply = attr_count;
+    PACK_LIST(req, request, PAIR_LIST_PROXY_REQUEST, proxy_request);
+    PACK_LIST(req, request, PAIR_LIST_PROXY_REPLY, proxy_reply);
 #endif
 #ifdef WITH_COA
-    attr_count = pack_list(req, request, PAIR_LIST_COA, &req->coa);
-    if (attr_count == -1) goto error;
-    req->n_coa = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_COA_REPLY, &req->coa_reply);
-    if (attr_count == -1) goto error;
-    req->n_coa_reply = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_DM, &req->disconnect);
-    if (attr_count == -1) goto error;
-    req->n_disconnect = attr_count;
-
-    attr_count = pack_list(req, request, PAIR_LIST_DM_REPLY, &req->disconnect_reply);
-    if (attr_count == -1) goto error;
-    req->n_disconnect_reply = attr_count;
+    PACK_LIST(req, request, PAIR_LIST_COA, coa);
+    PACK_LIST(req, request, PAIR_LIST_COA_REPLY, coa_reply);
+    PACK_LIST(req, request, PAIR_LIST_DM, disconnect);
+    PACK_LIST(req, request, PAIR_LIST_DM_REPLY, disconnect_reply);
 #endif
 
     return req;
@@ -201,7 +175,7 @@ error:
     return NULL;
 }
 
-void *serialize_request(TALLOC_CTX *ctx, size_t *len, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp) {
+void *serialize_request(TALLOC_CTX *ctx, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp, size_t *len) {
     void *buf = NULL;
     Request *req = pack_request(ctx, request, inst, comp);
     if (!req) goto release;
