@@ -56,6 +56,7 @@ struct  _FRAVP
 {
   ProtobufCMessage base;
   uint32_t attr;
+  protobuf_c_boolean has_vendor;
   uint32_t vendor;
   char *value;
   char *op;
@@ -65,7 +66,7 @@ struct  _FRAVP
 extern char fr__avp__op__default_value[];
 #define FR__AVP__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fr__avp__descriptor) \
-    , 0, 0, NULL, fr__avp__op__default_value, 0,0 }
+    , 0, 0,0u, NULL, fr__avp__op__default_value, 0,0 }
 
 
 struct  _Request

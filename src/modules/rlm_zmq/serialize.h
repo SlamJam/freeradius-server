@@ -18,4 +18,12 @@ Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, const rlm_zmq_t *inst, 
 
 void *serialize_request(TALLOC_CTX *ctx, REQUEST *request, rlm_zmq_t *inst, rlm_components_t comp, size_t *len);
 
+
+VALUE_PAIR *unpack_freeradius_valuepair(TALLOC_CTX *ctx, FRAVP *avp);
+int unpack_freeradius_valuepairs(TALLOC_CTX *ctx, FRAVP **avps, size_t count, VALUE_PAIR **p_vps);
+int unpack_list(TALLOC_CTX *ctx, FRAVP **avps, size_t count, REQUEST *request, pair_lists_t list);
+int unpack_response(TALLOC_CTX *ctx, Response *resp, REQUEST *request, rlm_zmq_t *inst, rlm_rcode_t *rcode);
+
+int deserialize_response(TALLOC_CTX *ctx, REQUEST *request, rlm_zmq_t *inst, void const *buf, size_t len, rlm_rcode_t *rcode);
+
 #endif /*_ZMQ_SERIALIZE_H*/

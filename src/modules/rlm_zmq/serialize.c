@@ -31,44 +31,12 @@ RCSID("$Id$")
 
 #include "serialize.h"
 
-#define PACK_LIST(req, request, PAIR_LIST, list) do { int count; req->list = pack_list(req, request, PAIR_LIST, &count); if (count == -1) goto error; req->n_##list = count; } while(0);
+#define PACK_LIST(ctx, req, request, PAIR_LIST, list) do { int count; req->list = pack_list(ctx, request, PAIR_LIST, &count); if (count == -1) goto error; req->n_##list = count; } while(0);
 
-// MACROS SERIALIZE(prefix)
+#define UNPACK_LIST(ctx, resp, request, PAIR_LIST, list) do { int count = unpack_list(ctx, resp->list, resp->n_##list, request, PAIR_LIST); if (count == -1) goto error; } while(0);
 
-/*
-// копипаста потенциально полезного кода
-    FR_TOKEN getop(char const **ptr)
-
-	da = dict_attrbyname(attribute);
-	if (!da) {
-		RWDEBUG("Attribute \"%s\" unknown, skipping", attribute);
-
-		curl_free(name);
-
-		continue;
-	}
-
-	ctx = radius_list_ctx(reference, list);
-
-	vp = pairalloc(ctx, da);
-	if (!vp) {
-		REDEBUG("Failed creating valuepair");
-		talloc_free(expanded);
-
-		goto error;
-	}
-
-	ret = pairparsevalue(vp, expanded, -1);
-	if (ret < 0) {
-		RWDEBUG("Incompatible value assignment, skipping");
-		talloc_free(vp);
-		goto skip;
-	}
-
-	pairadd(vps, vp);
-*/
-
-#define TALLOC_PROTOBUF(ctx, type) talloc_zero(ctx, type)
+//#define SERIALIZE(prefix)
+//#define TALLOC_PROTOBUF(ctx, type) talloc_zero(ctx, type)
 
 static int count_vps(const VALUE_PAIR *vps) {
     if (!vps) return 0;
@@ -153,19 +121,19 @@ Request *pack_request(TALLOC_CTX *ctx, REQUEST *request, UNUSED const rlm_zmq_t 
 
     req->component = (RLMCOMPONENT)comp;
 
-    PACK_LIST(req, request, PAIR_LIST_REQUEST, request);
-    PACK_LIST(req, request, PAIR_LIST_REPLY, reply);
-    PACK_LIST(req, request, PAIR_LIST_CONTROL, control);
-    PACK_LIST(req, request, PAIR_LIST_STATE, session_state);
+    PACK_LIST(ctx, req, request, PAIR_LIST_REQUEST, request);
+    PACK_LIST(ctx, req, request, PAIR_LIST_REPLY, reply);
+    PACK_LIST(ctx, req, request, PAIR_LIST_CONTROL, control);
+    PACK_LIST(ctx, req, request, PAIR_LIST_STATE, session_state);
 #ifdef WITH_PROXY
-    PACK_LIST(req, request, PAIR_LIST_PROXY_REQUEST, proxy_request);
-    PACK_LIST(req, request, PAIR_LIST_PROXY_REPLY, proxy_reply);
+    PACK_LIST(ctx, req, request, PAIR_LIST_PROXY_REQUEST, proxy_request);
+    PACK_LIST(ctx, req, request, PAIR_LIST_PROXY_REPLY, proxy_reply);
 #endif
 #ifdef WITH_COA
-    PACK_LIST(req, request, PAIR_LIST_COA, coa);
-    PACK_LIST(req, request, PAIR_LIST_COA_REPLY, coa_reply);
-    PACK_LIST(req, request, PAIR_LIST_DM, disconnect);
-    PACK_LIST(req, request, PAIR_LIST_DM_REPLY, disconnect_reply);
+    PACK_LIST(ctx, req, request, PAIR_LIST_COA, coa);
+    PACK_LIST(ctx, req, request, PAIR_LIST_COA_REPLY, coa_reply);
+    PACK_LIST(ctx, req, request, PAIR_LIST_DM, disconnect);
+    PACK_LIST(ctx, req, request, PAIR_LIST_DM_REPLY, disconnect_reply);
 #endif
 
     return req;
@@ -190,4 +158,124 @@ void *serialize_request(TALLOC_CTX *ctx, REQUEST *request, rlm_zmq_t *inst, rlm_
 release:
     TALLOC_FREE(req);
     return buf;
+}
+
+/* UNPACKING & DESERIALIZATION */
+
+VALUE_PAIR *unpack_freeradius_valuepair(TALLOC_CTX *ctx, FRAVP *avp) {
+    VALUE_PAIR *vp;
+    DICT_ATTR const* da;
+    int ret;
+
+    da = dict_attrbyvalue(avp->attr, avp->vendor);
+    if (!da) {
+    	DEBUG("Attribute code: \"%d\" vendor: \"%d\" unknown", avp->attr, avp->vendor);
+    }
+
+    vp = pairalloc(ctx, da);
+    if (!vp) {
+    	DEBUG("Failed creating valuepair");
+
+    	goto error;
+    }
+
+    ret = pairparsevalue(vp, avp->value, -1);
+    if (ret < 0) {
+    	DEBUG("Incompatible value assignment, skipping");
+    	goto error;
+    }
+/*
+    FR_TOKEN op = getop((const char **)&avp->op);
+    if (op == T_INVALID) {
+    	goto error;
+    }
+    vp->op = op;
+*/
+
+    if (vp->da->flags.has_tag) {
+        vp->tag = avp->tag;
+    }
+
+    return vp;
+
+error:
+    TALLOC_FREE(vp);
+    return NULL;
+}
+
+int unpack_freeradius_valuepairs(TALLOC_CTX *ctx, FRAVP **avps, size_t count, VALUE_PAIR **p_vps) {
+    VALUE_PAIR *vp;
+
+    for(size_t i = 0; i < count; i++) {
+        FRAVP *avp = avps[i];
+        vp = unpack_freeradius_valuepair(ctx, avp);
+        if (!vp) goto error;
+        pairadd(p_vps, vp);
+    }
+
+    return count;
+
+error:
+    return -1;
+}
+
+int unpack_list(UNUSED TALLOC_CTX *ctx, FRAVP **avps, size_t count, REQUEST *request, pair_lists_t list) {
+    if (!count) return 0;
+    if (!avps) return -1;
+
+	VALUE_PAIR **p_vps = radius_list(request, list);
+	//rad_assert(p_vps);
+
+    if (!p_vps) return -1;
+
+    // Если листа нет, то варнинг в консоль. Лучше дергать в самом конце, когда остальное проверено
+    TALLOC_CTX *list_ctx = radius_list_ctx(request, list);
+
+    return unpack_freeradius_valuepairs(list_ctx, avps, count, p_vps);
+}
+
+int unpack_response(TALLOC_CTX *ctx, Response *resp, REQUEST *request, UNUSED rlm_zmq_t *inst, rlm_rcode_t *rcode) {
+
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_REQUEST, request);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_REPLY, reply);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_CONTROL, control);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_STATE, session_state);
+#ifdef WITH_PROXY
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_PROXY_REQUEST, proxy_request);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_PROXY_REPLY, proxy_reply);
+#endif
+#ifdef WITH_COA
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_COA, coa);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_COA_REPLY, coa_reply);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_DM, disconnect);
+    UNPACK_LIST(ctx, resp, request, PAIR_LIST_DM_REPLY, disconnect_reply);
+#endif
+
+    *rcode = (rlm_rcode_t)resp->rcode;
+    return 0;
+
+error:
+    *rcode = RLM_MODULE_FAIL;
+    return -1;
+}
+
+
+int deserialize_response(TALLOC_CTX *ctx, REQUEST *request, rlm_zmq_t *inst, void const *buf, size_t len, rlm_rcode_t *rcode) {
+    int ret = 0;
+
+    Response *resp = response__unpack(NULL, len, buf);
+    if (resp == NULL) {
+        WARN("error unpacking incoming message");
+        goto error;
+    }
+
+    if (unpack_response(ctx, resp, request, inst, rcode) == -1) goto error;
+
+release:
+    if (resp) response__free_unpacked(resp, NULL);
+    return ret;
+
+error:
+    ret = -1;
+    goto release;
 }

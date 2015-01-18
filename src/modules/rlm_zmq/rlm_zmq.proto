@@ -1,10 +1,10 @@
 // Attribute-Value Pair
 message FR_AVP {
     required uint32 attr = 1;
-    required uint32 vendor = 2;
+    optional uint32 vendor = 2 [default = 0];
     // serialized to string value
     required string value = 3;
-    required string op = 4 [default = ":="];
+    optional string op = 4 [default = ":="];
     optional uint32 tag = 5;
 }
 

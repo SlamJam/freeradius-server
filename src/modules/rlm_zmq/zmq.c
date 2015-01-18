@@ -87,7 +87,11 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 	res = zmq_msg_recv (&msg, handle->sock, ZMQ_DONTWAIT);
 	if (res == -1) { WARN("rlm_zmq(%s): receive no message", inst->name); goto error; }
 
+	void *msg_buf = zmq_msg_data(&msg);
+	size_t msg_buf_len = zmq_msg_size(&msg);
+
     // Deserialize Response
+	if (deserialize_response(request, request, inst, msg_buf, msg_buf_len, &rcode) == -1) goto error;
 
 release:
 	fr_connection_release(inst->pool, handle);

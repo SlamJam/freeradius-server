@@ -137,6 +137,7 @@ void   response__free_unpacked
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 char fr__avp__op__default_value[] = ":=";
+static const uint32_t fr__avp__vendor__default_value = 0u;
 static const ProtobufCFieldDescriptor fr__avp__field_descriptors[5] =
 {
   {
@@ -154,12 +155,12 @@ static const ProtobufCFieldDescriptor fr__avp__field_descriptors[5] =
   {
     "vendor",
     2,
-    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
+    offsetof(FRAVP, has_vendor),
     offsetof(FRAVP, vendor),
     NULL,
-    NULL,
+    &fr__avp__vendor__default_value,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
@@ -178,7 +179,7 @@ static const ProtobufCFieldDescriptor fr__avp__field_descriptors[5] =
   {
     "op",
     4,
-    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(FRAVP, op),
