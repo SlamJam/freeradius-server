@@ -184,13 +184,13 @@ VALUE_PAIR *unpack_freeradius_valuepair(TALLOC_CTX *ctx, FRAVP *avp) {
     	DEBUG("Incompatible value assignment, skipping");
     	goto error;
     }
-/*
-    FR_TOKEN op = getop((const char **)&avp->op);
+
+    const char *p = avp->op;
+    FR_TOKEN op = getop(&p);
     if (op == T_INVALID) {
     	goto error;
     }
     vp->op = op;
-*/
 
     if (vp->da->flags.has_tag) {
         vp->tag = avp->tag;
