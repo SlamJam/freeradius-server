@@ -46,6 +46,9 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 	rlm_zmq_handle_t  *handle;
     void *buf = NULL;
     size_t buf_len = 0;
+	int res;
+	// Empty ØMQ message
+	zmq_msg_t msg;
 
 	rad_assert(request->packet != NULL);
 	rad_assert(request->reply != NULL);
@@ -61,35 +64,36 @@ rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUS
 		goto error;
 	}
 
+	// Serialize Request
     buf = serialize_request(request, request, inst, comp, &buf_len);
 	if (!buf) goto error;
 
-    int res = zmq_send(handle->sock, buf, buf_len, 0);
+	// Send Request
+    res = zmq_send(handle->sock, buf, buf_len, 0);
     if (res == -1) goto error;
 
-    // receive
-	/*
-	zmq_pollitem_t items [1];
-	items[0].socket = socket;
-	items[0].events = ZMQ_POLLIN;
-	int rc = zmq_poll (items, 1, inst->timeout);
-	if (rc == 0) goto error; // timeout
+	res = zmq_msg_init(&msg);
+	if (res == -1) { WARN("rlm_zmq(%s): can't init message", inst->name); goto error; }
 
-	// Create an empty ØMQ message
-	zmq_msg_t msg;
-	int rc = zmq_msg_init (&msg);
-	assert (rc == 0);
+    // Receive Response
+	zmq_pollitem_t items [1];
+	items[0].socket = handle->sock;
+	items[0].events = ZMQ_POLLIN;
+	res = zmq_poll (items, 1, inst->timeout);
+	if (res < 0) { WARN("rlm_zmq(%s): poll error", inst->name); goto error; }
+	if (res == 0) { WARN("rlm_zmq(%s): receive timeout", inst->name); goto error; }
+
 	// Block until a message is available to be received from socket
-	rc = zmq_msg_recv (&msg, handle->sock, 0);
-	assert (rc != -1);
-	// Release message
-	zmq_msg_close (&msg);
-	*/
-    // deserialize
+	res = zmq_msg_recv (&msg, handle->sock, ZMQ_DONTWAIT);
+	if (res == -1) { WARN("rlm_zmq(%s): receive no message", inst->name); goto error; }
+
+    // Deserialize Response
 
 release:
-    TALLOC_FREE(buf);
 	fr_connection_release(inst->pool, handle);
+    TALLOC_FREE(buf);
+	zmq_msg_close (&msg);
+
 	return rcode;
 
 error:
