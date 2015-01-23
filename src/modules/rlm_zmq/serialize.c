@@ -62,7 +62,7 @@ FRAVP *pack_freeradius_valuepair(TALLOC_CTX *ctx, const VALUE_PAIR *vp) {
     avp->attr = vp->da->attr;
     avp->vendor = vp->da->vendor;
     avp->value = vp_aprints_value(ctx, vp, '\0');
-    avp->op = (char *)fr_token_name(vp->op);
+    avp->op = talloc_strdup(avp, fr_token_name(vp->op));
     if (vp->da->flags.has_tag) {
         avp->tag = vp->tag;
     }
