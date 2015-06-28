@@ -1,0 +1,64 @@
+// Attribute-Value Pair
+message FR_AVP {
+    required uint32 attr = 1;
+    optional uint32 vendor = 2 [default = 0];
+    // serialized to string value
+    required string value = 3;
+    optional string op = 4 [default = ":="];
+    optional uint32 tag = 5;
+}
+
+enum RLM_RCODE {
+    REJECT      = 0;    // Immediately reject the request.
+    FAIL        = 1;    // Module failed, don't reply.
+    OK          = 2;    // The module is OK, continue.
+    HANDLED     = 3;    // The module handled the request, so stop.
+    INVALID     = 4;    // The module considers the request invalid.
+    USERLOCK    = 5;    // Reject the request (user is locked out).
+    NOTFOUND    = 6;    // User not found.
+    NOOP        = 7;    // Module succeeded without doing anything.
+    UPDATED     = 8;    // OK (pairs modified).
+    NUMCODES    = 9;    // How many valid return codes there are.
+    UNKNOWN     = 10;   // Error resolving rcode (should not be returned by modules).
+}
+
+enum RLM_COMPONENT {
+    AUTH        = 0;    // authenticate section.
+    AUTZ        = 1;    // authorize section.
+    PREACCT     = 2;    // preacct section.
+    ACCT        = 3;    // accounting section.
+    SESS        = 4;    // checksimul section.
+    PRE_PROXY   = 5;    // preproxy section.
+    POST_PROXY  = 6;    // postproxy section.
+    POST_AUTH   = 7;    // postauth section.
+    RECV_COA    = 8;    // recvcoa section.
+    SEND_COA    = 9;    // sendcoa section.
+}
+
+message Request {
+    required RLM_COMPONENT component    = 1;
+    repeated FR_AVP request             = 2;
+    repeated FR_AVP reply               = 3;
+    repeated FR_AVP control             = 4;
+    repeated FR_AVP session_state       = 5;
+    repeated FR_AVP proxy_request       = 6;
+    repeated FR_AVP proxy_reply         = 7;
+    repeated FR_AVP coa                 = 8;
+    repeated FR_AVP coa_reply           = 9;
+    repeated FR_AVP disconnect          = 10;
+    repeated FR_AVP disconnect_reply    = 11;
+}
+
+message Response {
+    required RLM_RCODE rcode            = 1 [default = NOOP];
+    repeated FR_AVP request             = 2;
+    repeated FR_AVP reply               = 3;
+    repeated FR_AVP control             = 4;
+    repeated FR_AVP session_state       = 5;
+    repeated FR_AVP proxy_request       = 6;
+    repeated FR_AVP proxy_reply         = 7;
+    repeated FR_AVP coa                 = 8;
+    repeated FR_AVP coa_reply           = 9;
+    repeated FR_AVP disconnect          = 10;
+    repeated FR_AVP disconnect_reply    = 11;
+}
