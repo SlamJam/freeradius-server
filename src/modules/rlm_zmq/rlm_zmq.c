@@ -25,6 +25,7 @@ RCSID("$Id$")
 
 #include <freeradius-devel/rad_assert.h>
 
+#include <protobuf-c.h>
 #include <zmq.h>
 
 #include "rlm_zmq.h"
@@ -68,9 +69,18 @@ static int mod_instantiate(CONF_SECTION *conf, void *instance)
 	inst->pool = fr_connection_pool_module_init(inst->cs, inst, mod_conn_create, NULL, NULL);
 	if (!inst->pool) return -1;
 
-	int major, minor, patch;
-	zmq_version (&major, &minor, &patch);
-	INFO("rlm_zmq loaded. Current ØMQ version is %d.%d.%d", major, minor, patch);
+	int zmq_major, zmq_minor, zmq_patch;
+	zmq_version(&zmq_major, &zmq_minor, &zmq_patch);
+
+	INFO("Compiled ØMQ version is %d.%d.%d, used %d.%d.%d",
+		ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH,
+		zmq_major, zmq_minor, zmq_patch);
+
+	INFO("Compiled Protobuf-c version is %s, used %s",
+		PROTOBUF_C_VERSION,
+		protobuf_c_version());
+
+	INFO("rlm_zmq loaded.");
 
 	return 0;
 }
