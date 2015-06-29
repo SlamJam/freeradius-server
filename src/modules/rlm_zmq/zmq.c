@@ -39,7 +39,7 @@ RCSID("$Id$")
 #include "zmq.h"
 #include "serialize.h"
 
-rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, UNUSED rlm_components_t comp) {
+rlm_rcode_t CC_HINT(nonnull) zmq_mod_call(void *instance, REQUEST *request, rlm_components_t comp) {
 	rlm_rcode_t rcode = RLM_MODULE_NOOP;
 
 	rlm_zmq_t *inst = instance;

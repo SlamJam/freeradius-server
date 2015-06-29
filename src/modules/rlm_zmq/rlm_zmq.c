@@ -79,7 +79,7 @@ static int mod_instantiate(CONF_SECTION *conf, void *instance)
  *	Only free memory we allocated.  The strings allocated via
  *	cf_section_parse() do not need to be freed.
  */
-static int mod_detach(UNUSED void *instance)
+static int mod_detach(void *instance)
 {
 	rlm_zmq_t *inst = instance;
 
@@ -157,6 +157,8 @@ static rlm_rcode_t CC_HINT(nonnull) mod_checksimul(void *instance, REQUEST *requ
  *	The server will then take care of ensuring that the module
  *	is single-threaded.
  */
+
+extern module_t rlm_zmq;
 module_t rlm_zmq = {
 	RLM_MODULE_INIT,
 	"zmq",
