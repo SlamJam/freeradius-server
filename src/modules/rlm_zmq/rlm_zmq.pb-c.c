@@ -565,7 +565,7 @@ const ProtobufCMessageDescriptor response__descriptor =
   (ProtobufCMessageInit) response__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =
+static const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =
 {
   { "REJECT", "RLM__RCODE__REJECT", 0 },
   { "FAIL", "RLM__RCODE__FAIL", 1 },
@@ -582,7 +582,7 @@ const ProtobufCEnumValue rlm__rcode__enum_values_by_number[11] =
 static const ProtobufCIntRange rlm__rcode__value_ranges[] = {
 {0, 0},{0, 11}
 };
-const ProtobufCEnumValueIndex rlm__rcode__enum_values_by_name[11] =
+static const ProtobufCEnumValueIndex rlm__rcode__enum_values_by_name[11] =
 {
   { "FAIL", 1 },
   { "HANDLED", 3 },
@@ -611,7 +611,7 @@ const ProtobufCEnumDescriptor rlm__rcode__descriptor =
   rlm__rcode__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-const ProtobufCEnumValue rlm__component__enum_values_by_number[10] =
+static const ProtobufCEnumValue rlm__component__enum_values_by_number[10] =
 {
   { "AUTH", "RLM__COMPONENT__AUTH", 0 },
   { "AUTZ", "RLM__COMPONENT__AUTZ", 1 },
@@ -627,7 +627,7 @@ const ProtobufCEnumValue rlm__component__enum_values_by_number[10] =
 static const ProtobufCIntRange rlm__component__value_ranges[] = {
 {0, 0},{0, 10}
 };
-const ProtobufCEnumValueIndex rlm__component__enum_values_by_name[10] =
+static const ProtobufCEnumValueIndex rlm__component__enum_values_by_name[10] =
 {
   { "ACCT", 3 },
   { "AUTH", 0 },
